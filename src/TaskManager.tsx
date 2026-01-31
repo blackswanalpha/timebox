@@ -2,15 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAtom } from 'jotai';
 import { toast } from 'sonner';
-import { 
-  Plus, 
-  Target, 
-  CheckCircle2, 
-  Clock, 
-  Loader2, 
-  Edit2, 
-  Trash2, 
-  X, 
+import {
+  Plus,
+  Target,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  Edit2,
+  Trash2,
+  X,
   Check,
   Play,
   ListTodo,
@@ -24,25 +24,25 @@ interface TaskManagerProps {
   selectedTaskId?: string;
 }
 
-type TabType = 'todo' | 'done';
+type TaskTabType = 'todo' | 'done';
 
 const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId }) => {
   const [tasks] = useAtom(tasksAtom);
   const [isLoading] = useAtom(tasksLoadingAtom);
   const [, fetchTasks] = useAtom(fetchTasksAtom);
-  
-  const [activeTab, setActiveTab] = useState<TabType>('todo');
-  
+
+  const [activeTab, setActiveTab] = useState<TaskTabType>('todo');
+
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskEstimate, setNewTaskEstimate] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Editing state
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editEstimate, setEditEstimate] = useState(1);
   const [isEditing, setIsEditing] = useState(false);
-  
+
   // Delete confirmation state
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -54,21 +54,21 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
 
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newTaskTitle.trim()) return;
-    
+
     try {
       setIsSubmitting(true);
       await apiService.createTask(
-        'default_user', 
-        newTaskTitle.trim(), 
+        'default_user',
+        newTaskTitle.trim(),
         newTaskEstimate
       );
-      
+
       toast.success('Task created successfully');
       // Reload tasks to get the updated list with pomodoro counts
       await fetchTasks();
-      
+
       setNewTaskTitle('');
       setNewTaskEstimate(1);
     } catch (error) {
@@ -102,18 +102,18 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
 
   const handleUpdateTask = async (taskId: string) => {
     if (!editTitle.trim()) return;
-    
+
     try {
       setIsEditing(true);
       await apiService.updateTask(taskId, {
         title: editTitle.trim(),
         estimated_pomodoros: editEstimate
       });
-      
+
       toast.success('Task updated');
       // Reload tasks to get updated data
       await fetchTasks();
-      
+
       setEditingTaskId(null);
       setIsEditing(false);
     } catch (error) {
@@ -128,7 +128,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
       await apiService.updateTask(task.id, {
         completed: newStatus
       });
-      
+
       toast.success(newStatus ? 'Task completed!' : 'Task reopened');
       // Reload tasks to get updated data
       await fetchTasks();
@@ -150,11 +150,11 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
     try {
       setIsDeleting(true);
       await apiService.deleteTask(taskId);
-      
+
       toast.success('Task deleted');
       // Reload tasks to get updated list
       await fetchTasks();
-      
+
       setDeletingTaskId(null);
     } catch (error) {
       console.error('Error deleting task:', error);
@@ -180,7 +180,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
           Tasks
         </div>
         <div className="task-tabs">
-          <button 
+          <button
             className={`task-tab ${activeTab === 'todo' ? 'active' : ''}`}
             onClick={() => setActiveTab('todo')}
           >
@@ -188,7 +188,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
             Todo
             <span className="tab-count">{todoCount}</span>
           </button>
-          <button 
+          <button
             className={`task-tab ${activeTab === 'done' ? 'active' : ''}`}
             onClick={() => setActiveTab('done')}
           >
@@ -198,7 +198,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
           </button>
         </div>
       </div>
-      
+
       <form onSubmit={handleCreateTask} className="task-input-container">
         <div className="task-input-wrapper">
           <input
@@ -210,9 +210,9 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
             required
           />
           <div className="task-input-controls">
-             <div className="est-control">
-               <Clock size={14} className="text-muted" />
-               <input
+            <div className="est-control">
+              <Clock size={14} className="text-muted" />
+              <input
                 type="number"
                 min="1"
                 max="20"
@@ -221,9 +221,9 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                 title="Estimated Pomodoros"
                 className="est-input"
               />
-             </div>
-            <button 
-              type="submit" 
+            </div>
+            <button
+              type="submit"
               className="btn-icon-primary"
               disabled={isSubmitting || !newTaskTitle.trim()}
               title="Add Task"
@@ -237,7 +237,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
           </div>
         </div>
       </form>
-      
+
       <div className="tasks-list-container">
         {isLoading && tasks.length === 0 ? (
           <div className="loading-state">
@@ -261,8 +261,8 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
         ) : (
           <div className="tasks-list">
             {filteredTasks.map(task => (
-              <div 
-                key={task.id} 
+              <div
+                key={task.id}
                 className={`task-item ${selectedTaskId === task.id ? 'selected' : ''} ${task.completed ? 'completed' : ''}`}
               >
                 {editingTaskId === task.id ? (
@@ -290,7 +290,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                       </div>
                     </div>
                     <div className="task-edit-actions">
-                      <button 
+                      <button
                         onClick={() => handleUpdateTask(task.id)}
                         className="btn-icon-success"
                         disabled={isEditing || !editTitle.trim()}
@@ -298,7 +298,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                       >
                         <Check size={16} />
                       </button>
-                      <button 
+                      <button
                         onClick={cancelEditing}
                         className="btn-icon-secondary"
                         disabled={isEditing}
@@ -313,7 +313,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                   <div className="task-delete-mode">
                     <span className="delete-text">Delete "{task.title}"?</span>
                     <div className="task-edit-actions">
-                      <button 
+                      <button
                         onClick={() => handleDeleteTask(task.id)}
                         className="btn-icon-danger"
                         disabled={isDeleting}
@@ -321,7 +321,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                       >
                         {isDeleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                       </button>
-                      <button 
+                      <button
                         onClick={cancelDelete}
                         className="btn-icon-secondary"
                         disabled={isDeleting}
@@ -342,7 +342,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                       >
                         {task.completed ? <Check size={14} /> : null}
                       </button>
-                      
+
                       <div className="task-content">
                         <span className="task-title">{task.title}</span>
                         <div className="task-pills">
@@ -351,9 +351,9 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                             {task.actual_pomodoros}/{task.estimated_pomodoros}
                           </span>
                           {selectedTaskId === task.id && (
-                             <span className="pill pill-active">
-                               Active
-                             </span>
+                            <span className="pill pill-active">
+                              Active
+                            </span>
                           )}
                         </div>
                       </div>
@@ -361,7 +361,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
 
                     <div className="task-actions-hover">
                       {!task.completed && (
-                        <button 
+                        <button
                           onClick={() => handleTaskSelect(task.id)}
                           className={`btn-action-primary ${selectedTaskId === task.id ? 'active' : ''}`}
                           title={selectedTaskId === task.id ? "Currently Active" : "Focus on this task"}
@@ -370,16 +370,16 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                           <Play size={16} fill={selectedTaskId === task.id ? "currentColor" : "none"} />
                         </button>
                       )}
-                      
+
                       <div className="secondary-actions">
-                        <button 
+                        <button
                           onClick={() => startEditing(task)}
                           className="btn-icon-ghost"
                           title="Edit"
                         >
                           <Edit2 size={16} />
                         </button>
-                        <button 
+                        <button
                           onClick={() => confirmDelete(task.id)}
                           className="btn-icon-ghost danger"
                           title="Delete"

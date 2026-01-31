@@ -1,12 +1,12 @@
 // App.tsx
 import { useAtom } from "jotai";
 import { Toaster } from "sonner";
-import { 
-  Timer, 
-  CheckSquare, 
-  History, 
-  BarChart3, 
-  Settings, 
+import {
+  Timer,
+  CheckSquare,
+  History,
+  BarChart3,
+  Settings,
   Box,
   Sun,
   Moon
@@ -18,6 +18,7 @@ import TaskManager from "./TaskManager";
 import SessionHistory from "./SessionHistory";
 import SettingsPanel from "./SettingsPanel";
 import AnalyticsDashboard from "./AnalyticsDashboard";
+import GoalsManager from "./GoalsManager";
 
 interface NavItem {
   id: TabType;
@@ -28,6 +29,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { id: 'timer', label: 'Timer', icon: <Timer /> },
   { id: 'tasks', label: 'Tasks', icon: <CheckSquare /> },
+  { id: 'goals', label: 'Goals', icon: <Box /> },
   { id: 'history', label: 'History', icon: <History /> },
   { id: 'analytics', label: 'Analytics', icon: <BarChart3 /> },
   { id: 'settings', label: 'Settings', icon: <Settings /> },
@@ -58,8 +60,8 @@ function App() {
           </div>
           <h1>TimeBox</h1>
         </div>
-        <button 
-          className="theme-toggle" 
+        <button
+          className="theme-toggle"
           onClick={toggleTheme}
           title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
@@ -84,6 +86,7 @@ function App() {
         <div className="fade-in">
           {activeTab === 'timer' && <PomodoroTimer selectedTaskId={selectedTaskId} onTaskSelect={setSelectedTaskId} />}
           {activeTab === 'tasks' && <TaskManager onSelectTask={handleTaskSelect} selectedTaskId={selectedTaskId} />}
+          {activeTab === 'goals' && <GoalsManager />}
           {activeTab === 'history' && <SessionHistory />}
           {activeTab === 'analytics' && <AnalyticsDashboard />}
           {activeTab === 'settings' && <SettingsPanel />}

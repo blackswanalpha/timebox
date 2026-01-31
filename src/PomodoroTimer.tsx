@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAtom } from 'jotai';
 import { toast } from 'sonner';
-import { Play, Pause, Square, Target, CheckCircle2 } from 'lucide-react';
+import { Play, Pause, Square, Target, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useTimer } from './useTimer';
 import { tasksAtom, fetchTasksAtom } from './atoms';
 
@@ -23,12 +23,13 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
     pauseTimer,
     resumeTimer,
     stopTimer,
+    recordInterruption,
     dismissCompletion
   } = useTimer();
-  
+
   const [tasks] = useAtom(tasksAtom);
   const [, fetchTasks] = useAtom(fetchTasksAtom);
-  
+
   const [localSelectedTask, setLocalSelectedTask] = useState<string | undefined>(selectedTaskId);
   const [showTaskSelector, setShowTaskSelector] = useState(false);
 
@@ -73,7 +74,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
       toast.info('Please select a task to start or choose "No Task"');
       return;
     }
-    
+
     startTimer(localSelectedTask, timerStatus.session_type || 'FOCUS');
     toast.success('Timer Started');
     setShowTaskSelector(false);
@@ -147,7 +148,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
           {getSessionIcon()}
           {getSessionLabel()}
         </div>
-        
+
         {timerStatus.task_title && (
           <div className="current-task-display">
             <Target size={16} />
@@ -155,7 +156,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
           </div>
         )}
       </div>
-      
+
       <div className="timer-circle-container">
         <svg className="timer-svg" viewBox="0 0 100 100">
           <circle
@@ -177,7 +178,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
           <span className="time">{formatTime(minutes)}:{formatTime(seconds)}</span>
         </div>
       </div>
-      
+
       <div className="timer-controls">
         {!isActive && !isPaused ? (
           <button onClick={handleStart} className="btn btn-primary btn-lg">
@@ -201,10 +202,14 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
               <Square size={20} />
               Stop
             </button>
+            <button onClick={recordInterruption} className="btn btn-warning btn-lg">
+              <AlertTriangle size={20} />
+              Interruption
+            </button>
           </>
         )}
       </div>
-      
+
       {showTaskSelector && (
         <div className="task-selector-card">
           <div className="task-selector-header">
@@ -213,8 +218,8 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
           </div>
           <ul className="task-selector-list">
             {tasks.map(task => (
-              <li 
-                key={task.id} 
+              <li
+                key={task.id}
                 className="task-selector-item"
                 onClick={() => handleTaskSelect(task.id)}
               >
@@ -225,7 +230,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
                 <CheckCircle2 size={20} style={{ color: 'var(--color-success)' }} />
               </li>
             ))}
-            <li 
+            <li
               className="task-selector-item"
               onClick={() => {
                 setLocalSelectedTask(undefined);
@@ -243,7 +248,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
           </ul>
         </div>
       )}
-      
+
       <div className="session-status">
         <span className="status-dot"></span>
         <span>{getStatusText()} • {timerStatus.session_type}</span>

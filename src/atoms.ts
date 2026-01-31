@@ -3,7 +3,7 @@ import { Task } from './types';
 import { apiService } from './apiService';
 
 // UI State
-export type TabType = 'timer' | 'tasks' | 'history' | 'analytics' | 'settings';
+export type TabType = 'timer' | 'tasks' | 'goals' | 'history' | 'analytics' | 'settings';
 export const activeTabAtom = atom<TabType>('timer');
 
 export const selectedTaskIdAtom = atom<string | undefined>(undefined);
@@ -45,6 +45,26 @@ export const fetchTasksAtom = atom(
       console.error('Error fetching tasks:', error);
     } finally {
       set(tasksLoadingAtom, false);
+    }
+  }
+);
+
+// Goals State
+export const goalsAtom = atom<any[]>([]); // Using any for now, should use Goal type from types.ts
+export const goalsLoadingAtom = atom<boolean>(false);
+
+// Action to refresh goals
+export const fetchGoalsAtom = atom(
+  null,
+  async (_get, set) => {
+    set(goalsLoadingAtom, true);
+    try {
+      const goals = await apiService.getGoals('default_user');
+      set(goalsAtom, goals);
+    } catch (error) {
+      console.error('Error fetching goals:', error);
+    } finally {
+      set(goalsLoadingAtom, false);
     }
   }
 );
