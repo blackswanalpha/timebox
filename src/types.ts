@@ -47,6 +47,10 @@ export interface Goal {
   target_pomodoros: number;
   completed_pomodoros: number;
   completed: boolean;
+  category?: string;
+  motivation?: string;
+  target_date?: string; // ISO String
+  description?: string;
   created_at: string;
 }
 

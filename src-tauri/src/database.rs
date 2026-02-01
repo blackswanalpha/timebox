@@ -75,6 +75,10 @@ pub struct Goal {
     pub target_pomodoros: i32,
     pub completed_pomodoros: i32,
     pub completed: bool,
+    pub category: Option<String>,
+    pub motivation: Option<String>,
+    pub target_date: Option<DateTime<Utc>>,
+    pub description: Option<String>,
     pub created_at: DateTime<Utc>,
 }
 
@@ -92,7 +96,7 @@ impl Database {
         Ok(Database { pool })
     }
 
-    async fn run_migrations(pool: &Pool<Sqlite>) -> Result<(), sqlx::Error> {
+    pub async fn run_migrations(pool: &Pool<Sqlite>) -> Result<(), sqlx::Error> {
         // Create tables
         sqlx::query(
             r#"
@@ -163,11 +167,25 @@ impl Database {
                 target_pomodoros INTEGER NOT NULL,
                 completed_pomodoros INTEGER DEFAULT 0,
                 completed BOOLEAN DEFAULT 0,
+                
+                category TEXT,
+                motivation TEXT,
+                target_date DATETIME,
+                description TEXT,
+
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
             "#
         ).execute(pool).await?;
+
+        // Attempt to add new columns if they don't exist (migrations for existing dbs)
+        // We ignore errors here as the column might already exist.
+        // In a production app top-notch migrations would be better, but this suffices for local embedded app.
+        let _ = sqlx::query("ALTER TABLE goals ADD COLUMN category TEXT").execute(pool).await;
+        let _ = sqlx::query("ALTER TABLE goals ADD COLUMN motivation TEXT").execute(pool).await;
+        let _ = sqlx::query("ALTER TABLE goals ADD COLUMN target_date DATETIME").execute(pool).await;
+        let _ = sqlx::query("ALTER TABLE goals ADD COLUMN description TEXT").execute(pool).await;
 
         // Insert default user if none exists
         sqlx::query(
@@ -568,19 +586,34 @@ impl Database {
         Ok(sessions)
     }
 
-    pub async fn create_goal(&self, user_id: &str, title: &str, target_pomodoros: i32) -> Result<Goal, sqlx::Error> {
+    // Goal Methods
+
+    pub async fn create_goal(
+        &self, 
+        user_id: &str, 
+        title: &str, 
+        target_pomodoros: i32,
+        category: Option<String>,
+        motivation: Option<String>,
+        target_date: Option<DateTime<Utc>>,
+        description: Option<String>
+    ) -> Result<Goal, sqlx::Error> {
         let goal_id = Uuid::new_v4().to_string();
 
         sqlx::query(
             r#"
-            INSERT INTO goals (id, user_id, title, target_pomodoros)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO goals (id, user_id, title, target_pomodoros, category, motivation, target_date, description)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             "#,
         )
         .bind(&goal_id)
         .bind(user_id)
         .bind(title)
         .bind(target_pomodoros)
+        .bind(&category)
+        .bind(&motivation)
+        .bind(&target_date)
+        .bind(&description)
         .execute(&self.pool)
         .await?;
 
@@ -591,6 +624,10 @@ impl Database {
             target_pomodoros,
             completed_pomodoros: 0,
             completed: false,
+            category,
+            motivation,
+            target_date,
+            description,
             created_at: Utc::now(),
         })
     }
@@ -598,7 +635,8 @@ impl Database {
     pub async fn get_goals(&self, user_id: &str) -> Result<Vec<Goal>, sqlx::Error> {
         let rows = sqlx::query(
             r#"
-            SELECT id, user_id, title, target_pomodoros, completed_pomodoros, completed, created_at
+            SELECT id, user_id, title, target_pomodoros, completed_pomodoros, completed, 
+                   category, motivation, target_date, description, created_at
             FROM goals
             WHERE user_id = ?
             ORDER BY created_at DESC
@@ -615,10 +653,98 @@ impl Database {
             target_pomodoros: row.get("target_pomodoros"),
             completed_pomodoros: row.get("completed_pomodoros"),
             completed: row.get::<i32, &str>("completed") != 0,
+            category: row.get("category"),
+            motivation: row.get("motivation"),
+            target_date: row.get("target_date"),
+            description: row.get("description"),
             created_at: row.get("created_at"),
         }).collect();
 
         Ok(goals)
+    }
+    
+    pub async fn update_goal(
+        &self, 
+        goal_id: &str, 
+        title: Option<&str>, 
+        target_pomodoros: Option<i32>, 
+        completed: Option<bool>,
+        category: Option<String>,
+        motivation: Option<String>,
+        target_date: Option<DateTime<Utc>>,
+        description: Option<String>
+    ) -> Result<(), sqlx::Error> {
+        
+        // Dynamic update to handle partial updates would be better, but implementing explicit update for now
+        // NOTE: In a real world scenario checking for existence or building a dynamic query is better
+        // For simplicity, we update non-null provided values. 
+        // But sqlx doesn't support easy dynamic queries without QueryBuilder (which is available but let's stick to simple SQL if possible)
+        // OR we just fetch and update.
+        
+
+
+        // This is getting complicated manually, let's just use the 'get then update' pattern or a simpler fixed query if we assume all fields are passed or minimal subsets
+        // Let's implement full update for simplicity if we can, or just individual fields.
+        // Actually, let's just use a comprehensive UPDATE with COALESCE or just separate queries?
+        // Let's stick to the pattern used in update_task: fetch then update.
+        
+        // Fetch existing goal not implemented as public method yet, let's add get_goal helper or just query it
+        let row = sqlx::query("SELECT * FROM goals WHERE id = ?").bind(goal_id).fetch_optional(&self.pool).await?;
+        
+        if let Some(row) = row {
+             let cur_title: String = row.get("title");
+             let cur_target: i32 = row.get("target_pomodoros");
+             let cur_completed: bool = row.get::<i32, &str>("completed") != 0;
+             let cur_category: Option<String> = row.get("category");
+             let cur_motivation: Option<String> = row.get("motivation");
+             let cur_target_date: Option<DateTime<Utc>> = row.get("target_date");
+             let cur_description: Option<String> = row.get("description");
+
+             let new_title = title.unwrap_or(&cur_title);
+             let new_target = target_pomodoros.unwrap_or(cur_target);
+             let new_completed = completed.unwrap_or(cur_completed);
+             
+             // For Option<String> arguments, if they are None (in the function arg), we keep existing. 
+             // If we wanted to clear them, we'd need Option<Option<String>>. For now assume we don't clear fields via this API easily unless explicit.
+             let new_category = category.or(cur_category);
+             let new_motivation = motivation.or(cur_motivation);
+             let new_target_date = target_date.or(cur_target_date);
+             let new_description = description.or(cur_description);
+
+             sqlx::query(
+                r#"
+                UPDATE goals 
+                SET title = ?, target_pomodoros = ?, completed = ?, category = ?, motivation = ?, target_date = ?, description = ?
+                WHERE id = ?
+                "#
+             )
+             .bind(new_title)
+             .bind(new_target)
+             .bind(new_completed)
+             .bind(new_category)
+             .bind(new_motivation)
+             .bind(new_target_date)
+             .bind(new_description)
+             .bind(goal_id)
+             .execute(&self.pool)
+             .await?;
+        }
+        
+        Ok(())
+    }
+
+    pub async fn delete_goal(&self, goal_id: &str) -> Result<(), sqlx::Error> {
+        sqlx::query(
+            r#"
+            DELETE FROM goals
+            WHERE id = ?
+            "#,
+        )
+        .bind(goal_id)
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
     }
 
     pub async fn increment_interruption_count(&self, session_id: &str) -> Result<(), sqlx::Error> {

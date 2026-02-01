@@ -1,12 +1,12 @@
 // apiService.ts
 import { invoke } from '@tauri-apps/api/core';
-import { 
-  PomodoroSettings, 
-  Task, 
-  PomodoroSession, 
-  Goal, 
+import {
+  PomodoroSettings,
+  Task,
+  PomodoroSession,
+  Goal,
   TimerStatus,
-  SettingsUpdateRequest 
+  SettingsUpdateRequest
 } from './types';
 
 export const apiService = {
@@ -16,8 +16,8 @@ export const apiService = {
   },
 
   async startSession(
-    userId?: string, 
-    taskId?: string, 
+    userId?: string,
+    taskId?: string,
     sessionType: 'FOCUS' | 'SHORT_BREAK' | 'LONG_BREAK' = 'FOCUS'
   ): Promise<PomodoroSession> {
     return await invoke('start_session', {
@@ -110,16 +110,48 @@ export const apiService = {
   async createGoal(
     userId: string,
     title: string,
-    targetPomodoros: number
+    targetPomodoros: number,
+    category?: string,
+    motivation?: string,
+    targetDate?: string, // ISO string
+    description?: string
   ): Promise<Goal> {
     return await invoke('create_goal', {
       userId: userId,
       title,
-      targetPomodoros: targetPomodoros
+      targetPomodoros: targetPomodoros,
+      category,
+      motivation,
+      targetDate,
+      description
     });
   },
 
   async getGoals(userId: string): Promise<Goal[]> {
     return await invoke('get_goals', { userId: userId });
+  },
+
+  async updateGoal(
+    goalId: string,
+    updates: {
+      title?: string;
+      target_pomodoros?: number;
+      completed?: boolean;
+      category?: string;
+      motivation?: string;
+      target_date?: string;
+      description?: string;
+    }
+  ): Promise<void> {
+    return await invoke('update_goal', {
+      req: {
+        goal_id: goalId,
+        ...updates
+      }
+    });
+  },
+
+  async deleteGoal(goalId: string): Promise<void> {
+    return await invoke('delete_goal', { goalId: goalId });
   }
 };

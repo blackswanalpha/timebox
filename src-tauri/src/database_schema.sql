@@ -56,6 +56,12 @@ CREATE TABLE IF NOT EXISTS goals (
     target_pomodoros INTEGER NOT NULL,
     completed_pomodoros INTEGER DEFAULT 0,
     completed BOOLEAN DEFAULT 0,
+    
+    category TEXT,
+    motivation TEXT,
+    target_date DATETIME,
+    description TEXT,
+
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

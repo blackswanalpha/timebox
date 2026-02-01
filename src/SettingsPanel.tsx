@@ -1,6 +1,6 @@
 // SettingsPanel.tsx
 import React, { useState, useEffect } from 'react';
-import { Settings, Clock, Shield, Save, Check, Loader2 } from 'lucide-react';
+import { Cog6ToothIcon, ClockIcon, ShieldCheckIcon, ArrowDownOnSquareIcon, CheckIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { apiService } from './apiService';
 import { PomodoroSettings } from './types';
 
@@ -72,12 +72,12 @@ const SettingsPanel: React.FC = () => {
       <div className="card">
         <div className="card-header">
           <div className="card-title">
-            <Settings size={24} />
+            <Cog6ToothIcon className="h-6 w-6" />
             Settings
           </div>
         </div>
         <div className="empty-state">
-          <Loader2 size={32} style={{ animation: 'spin 1s linear infinite' }} />
+          <ArrowPathIcon className="h-8 w-8 animate-spin" />
           <p>Loading settings...</p>
         </div>
       </div>
@@ -85,140 +85,147 @@ const SettingsPanel: React.FC = () => {
   }
 
   return (
-    <div className="card settings-panel">
-      <div className="card-header">
-        <div className="card-title">
-          <Settings size={24} />
-          Settings
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900/50 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2.5 rounded-xl text-indigo-600 dark:text-indigo-400">
+            <Cog6ToothIcon className="h-6 w-6" />
+          </div>
+          <h2 className="text-xl font-bold">Settings</h2>
         </div>
       </div>
       
-      <form onSubmit={handleSaveSettings}>
-        <div className="settings-section">
-          <div className="settings-section-title">
-            <Clock size={18} />
-            Timer Durations
+      <form onSubmit={handleSaveSettings} className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-10">
+        {/* Timer Durations Section */}
+        <section>
+          <div className="flex items-center gap-2 mb-6">
+            <ClockIcon className="h-4.5 w-4.5 text-indigo-500" />
+            <h3 className="text-sm font-black uppercase tracking-widest text-slate-500">Timer Durations</h3>
           </div>
           
-          <div className="settings-row">
-            <div className="form-group">
-              <label htmlFor="focus-minutes">Focus Duration</label>
-              <input
-                type="number"
-                id="focus-minutes"
-                min="1"
-                max="60"
-                value={focusMinutes}
-                onChange={(e) => setFocusMinutes(parseInt(e.target.value) || 25)}
-              />
-              <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>minutes</small>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label htmlFor="focus-minutes" className="block text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Focus Duration</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  id="focus-minutes"
+                  min="1"
+                  max="60"
+                  value={focusMinutes}
+                  onChange={(e) => setFocusMinutes(parseInt(e.target.value) || 25)}
+                  className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-lg font-black text-indigo-600 dark:text-indigo-400 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-widest text-slate-400 pointer-events-none">Min</span>
+              </div>
             </div>
             
-            <div className="form-group">
-              <label htmlFor="short-break-minutes">Short Break</label>
-              <input
-                type="number"
-                id="short-break-minutes"
-                min="1"
-                max="30"
-                value={shortBreakMinutes}
-                onChange={(e) => setShortBreakMinutes(parseInt(e.target.value) || 5)}
-              />
-              <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>minutes</small>
+            <div className="space-y-2">
+              <label htmlFor="short-break-minutes" className="block text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Short Break</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  id="short-break-minutes"
+                  min="1"
+                  max="30"
+                  value={shortBreakMinutes}
+                  onChange={(e) => setShortBreakMinutes(parseInt(e.target.value) || 5)}
+                  className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-lg font-black text-emerald-600 dark:text-emerald-400 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-widest text-slate-400 pointer-events-none">Min</span>
+              </div>
             </div>
             
-            <div className="form-group">
-              <label htmlFor="long-break-minutes">Long Break</label>
-              <input
-                type="number"
-                id="long-break-minutes"
-                min="1"
-                max="60"
-                value={longBreakMinutes}
-                onChange={(e) => setLongBreakMinutes(parseInt(e.target.value) || 15)}
-              />
-              <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>minutes</small>
+            <div className="space-y-2">
+              <label htmlFor="long-break-minutes" className="block text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Long Break</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  id="long-break-minutes"
+                  min="1"
+                  max="60"
+                  value={longBreakMinutes}
+                  onChange={(e) => setLongBreakMinutes(parseInt(e.target.value) || 15)}
+                  className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-lg font-black text-blue-600 dark:text-blue-400 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-widest text-slate-400 pointer-events-none">Min</span>
+              </div>
             </div>
             
-            <div className="form-group">
-              <label htmlFor="cycles-before-long-break">Cycles Before Long Break</label>
-              <input
-                type="number"
-                id="cycles-before-long-break"
-                min="1"
-                max="10"
-                value={cyclesBeforeLongBreak}
-                onChange={(e) => setCyclesBeforeLongBreak(parseInt(e.target.value) || 4)}
-              />
-              <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>focus sessions</small>
+            <div className="space-y-2">
+              <label htmlFor="cycles-before-long-break" className="block text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Cycles Before Long Break</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  id="cycles-before-long-break"
+                  min="1"
+                  max="10"
+                  value={cyclesBeforeLongBreak}
+                  onChange={(e) => setCyclesBeforeLongBreak(parseInt(e.target.value) || 4)}
+                  className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-lg font-black text-amber-600 dark:text-amber-400 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-widest text-slate-400 pointer-events-none">Cycles</span>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
         
-        <div className="settings-section">
-          <div className="settings-section-title">
-            <Shield size={18} />
-            Behavior
+        {/* Behavior Section */}
+        <section>
+          <div className="flex items-center gap-2 mb-6">
+            <ShieldCheckIcon className="h-4.5 w-4.5 text-indigo-500" />
+            <h3 className="text-sm font-black uppercase tracking-widest text-slate-500">App Behavior</h3>
           </div>
           
-          <div className="form-group checkbox-group">
-            <label className="toggle-switch">
-              <input
-                type="checkbox"
-                checked={strictMode}
-                onChange={(e) => setStrictMode(e.target.checked)}
-              />
-              <span className="toggle-slider"></span>
-              <span style={{ marginLeft: '12px', fontWeight: 500 }}>
-                Strict Mode
-              </span>
-            </label>
-            <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginLeft: '60px' }}>
-              Prevents skipping breaks
-            </small>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
+              <div>
+                <p className="font-bold text-slate-800 dark:text-slate-200">Strict Mode</p>
+                <p className="text-xs text-slate-400">Prevents skipping breaks to ensure health</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStrictMode(!strictMode)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${strictMode ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'}`}
+              >
+                <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${strictMode ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
+              <div>
+                <p className="font-bold text-slate-800 dark:text-slate-200">Auto-start Breaks</p>
+                <p className="text-xs text-slate-400">Automatically start break timers after focus</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAutoStartBreaks(!autoStartBreaks)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${autoStartBreaks ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'}`}
+              >
+                <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${autoStartBreaks ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
+            </div>
           </div>
-          
-          <div className="form-group checkbox-group" style={{ marginTop: '16px' }}>
-            <label className="toggle-switch">
-              <input
-                type="checkbox"
-                checked={autoStartBreaks}
-                onChange={(e) => setAutoStartBreaks(e.target.checked)}
-              />
-              <span className="toggle-slider"></span>
-              <span style={{ marginLeft: '12px', fontWeight: 500 }}>
-                Auto-start Breaks
-              </span>
-            </label>
-            <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginLeft: '60px' }}>
-              Automatically start break timers
-            </small>
-          </div>
-        </div>
+        </section>
         
-        <div className="settings-action">
+        {/* Footer Actions */}
+        <div className="pt-6 flex flex-col sm:flex-row items-center gap-4 border-t border-slate-100 dark:border-slate-800">
           <button 
             type="submit" 
-            className="btn btn-primary"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95 disabled:opacity-50"
             disabled={isSaving}
           >
-            {isSaving ? (
-              <>
-                <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save size={18} />
-                Save Settings
-              </>
-            )}
+            {isSaving ? <ArrowPathIcon className="h-5 w-5 animate-spin" /> : <ArrowDownOnSquareIcon className="h-5 w-5" />}
+            <span>{isSaving ? 'Saving...' : 'Save Settings'}</span>
           </button>
           
           {saveSuccess && (
-            <div className="save-success">
-              <Check size={16} />
-              Settings saved!
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold animate-fade-in">
+              <div className="bg-emerald-100 dark:bg-emerald-900/30 p-1 rounded-full">
+                <CheckIcon className="h-3.5 w-3.5" />
+              </div>
+              <span className="text-sm">Settings saved!</span>
             </div>
           )}
         </div>

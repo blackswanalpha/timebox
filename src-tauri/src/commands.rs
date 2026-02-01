@@ -191,6 +191,24 @@ pub async fn stop_session(state: tauri::State<'_, Arc<AppState>>) -> Result<(), 
 }
 
 #[tauri::command]
+pub async fn has_active_session(state: tauri::State<'_, Arc<AppState>>) -> Result<bool, String> {
+    let active_session = state.active_session.read().await;
+    Ok(active_session.is_some())
+}
+
+#[tauri::command]
+pub async fn save_active_session(state: tauri::State<'_, Arc<AppState>>) -> Result<(), String> {
+    let mut active_session = state.active_session.write().await;
+    if let Some(session) = active_session.take() {
+        let duration = (Utc::now() - session.start_time).num_seconds() as i32;
+        state.db.update_session(&session.session.id, Utc::now(), duration)
+            .await
+            .map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn get_timer_status(state: tauri::State<'_, Arc<AppState>>) -> Result<TimerStatusResponse, String> {
     let active_session = state.active_session.read().await;
     
@@ -308,8 +326,12 @@ pub async fn create_goal(
     user_id: String,
     title: String,
     target_pomodoros: i32,
+    category: Option<String>,
+    motivation: Option<String>,
+    target_date: Option<DateTime<Utc>>,
+    description: Option<String>,
 ) -> Result<Goal, String> {
-    state.db.create_goal(&user_id, &title, target_pomodoros).await
+    state.db.create_goal(&user_id, &title, target_pomodoros, category, motivation, target_date, description).await
         .map_err(|e| e.to_string())
 }
 
@@ -361,6 +383,18 @@ pub async fn delete_task(
         .map_err(|e| e.to_string())
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct UpdateGoalRequest {
+    pub goal_id: String,
+    pub title: Option<String>,
+    pub target_pomodoros: Option<i32>,
+    pub completed: Option<bool>,
+    pub category: Option<String>,
+    pub motivation: Option<String>,
+    pub target_date: Option<DateTime<Utc>>,
+    pub description: Option<String>,
+}
+
 #[tauri::command]
 pub async fn get_tasks_with_pomodoro_counts(
     state: tauri::State<'_, Arc<AppState>>,
@@ -377,4 +411,31 @@ pub async fn get_tasks_with_pomodoro_counts(
         .collect();
     
     Ok(result)
+}
+
+#[tauri::command]
+pub async fn update_goal(
+    state: tauri::State<'_, Arc<AppState>>,
+    req: UpdateGoalRequest,
+) -> Result<(), String> {
+    state.db.update_goal(
+        &req.goal_id, 
+        req.title.as_deref(), 
+        req.target_pomodoros, 
+        req.completed,
+        req.category,
+        req.motivation,
+        req.target_date,
+        req.description
+    ).await
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn delete_goal(
+    state: tauri::State<'_, Arc<AppState>>,
+    goal_id: String,
+) -> Result<(), String> {
+    state.db.delete_goal(&goal_id).await
+        .map_err(|e| e.to_string())
 }

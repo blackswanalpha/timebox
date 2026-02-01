@@ -1,23 +1,23 @@
 // useTimer.ts
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
+import { useAtom } from 'jotai';
 import { apiService } from './apiService';
-import { TimerStatus } from './types';
+import {
+  timerStatusAtom,
+  timerMinutesAtom,
+  timerSecondsAtom,
+  timerIsActiveAtom,
+  timerIsPausedAtom,
+  timerIsCompletedAtom
+} from './atoms';
 
 export const useTimer = () => {
-  const [timerStatus, setTimerStatus] = useState<TimerStatus>({
-    time_remaining: 0,
-    is_running: false,
-    is_paused: false,
-    session_type: 'FOCUS',
-    task_title: undefined,
-    duration_minutes: 25,
-    interruption_count: 0
-  });
-  const [seconds, setSeconds] = useState(0);
-  const [minutes, setMinutes] = useState(0);
-  const [isActive, setIsActive] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [timerStatus, setTimerStatus] = useAtom(timerStatusAtom);
+  const [minutes, setMinutes] = useAtom(timerMinutesAtom);
+  const [seconds, setSeconds] = useAtom(timerSecondsAtom);
+  const [isActive, setIsActive] = useAtom(timerIsActiveAtom);
+  const [isPaused, setIsPaused] = useAtom(timerIsPausedAtom);
+  const [isCompleted, setIsCompleted] = useAtom(timerIsCompletedAtom);
 
   // Update the timer display based on the remaining time
   useEffect(() => {
@@ -25,14 +25,14 @@ export const useTimer = () => {
     setSeconds(timerStatus.time_remaining % 60);
     setIsActive(timerStatus.is_running && !timerStatus.is_paused);
     setIsPaused(timerStatus.is_paused);
-    
+
     // Check if timer completed
     if (timerStatus.is_running && timerStatus.time_remaining === 0 && !isCompleted) {
       setIsCompleted(true);
     } else if (!timerStatus.is_running && timerStatus.time_remaining > 0) {
       setIsCompleted(false);
     }
-  }, [timerStatus, isCompleted]);
+  }, [timerStatus, isCompleted, setMinutes, setSeconds, setIsActive, setIsPaused, setIsCompleted]);
 
   // Poll for timer status updates
   useEffect(() => {
@@ -55,7 +55,7 @@ export const useTimer = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [timerStatus.is_running]);
+  }, [timerStatus.is_running, setTimerStatus]);
 
   const startTimer = useCallback(async (taskId?: string, sessionType: 'FOCUS' | 'SHORT_BREAK' | 'LONG_BREAK' = 'FOCUS') => {
     try {
@@ -67,7 +67,7 @@ export const useTimer = () => {
     } catch (error) {
       console.error('Error starting timer:', error);
     }
-  }, []);
+  }, [setIsCompleted, setTimerStatus]);
 
   const pauseTimer = useCallback(async () => {
     try {
@@ -78,7 +78,7 @@ export const useTimer = () => {
     } catch (error) {
       console.error('Error pausing timer:', error);
     }
-  }, []);
+  }, [setTimerStatus]);
 
   const resumeTimer = useCallback(async () => {
     try {
@@ -89,7 +89,7 @@ export const useTimer = () => {
     } catch (error) {
       console.error('Error resuming timer:', error);
     }
-  }, []);
+  }, [setTimerStatus]);
 
   const stopTimer = useCallback(async () => {
     try {
@@ -101,7 +101,7 @@ export const useTimer = () => {
     } catch (error) {
       console.error('Error stopping timer:', error);
     }
-  }, []);
+  }, [setIsCompleted, setTimerStatus]);
 
   const recordInterruption = useCallback(async () => {
     try {
@@ -116,11 +116,11 @@ export const useTimer = () => {
       console.error('Error recording interruption:', error);
       return null;
     }
-  }, []);
+  }, [setTimerStatus]);
 
   const dismissCompletion = useCallback(() => {
     setIsCompleted(false);
-  }, []);
+  }, [setIsCompleted]);
 
   return {
     minutes,
