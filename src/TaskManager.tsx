@@ -56,7 +56,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
 
   // Delete confirmation state
   const [deletingTaskId, setDeletingTaskId] = useAtom(deletingTaskIdAtom);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [, setIsDeleting] = useState(false);
 
   // Load tasks on component mount
   useEffect(() => {

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "timebox-main",
+  "productName": "TimeBox",
   "version": "0.1.0",
-  "identifier": "com.mbugua.timebox-main",
+  "identifier": "com.mbugua.timebox",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
