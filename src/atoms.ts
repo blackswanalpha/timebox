@@ -3,7 +3,7 @@ import { Task } from './types';
 import { apiService } from './apiService';
 
 // UI State
-export type TabType = 'timer' | 'tasks' | 'goals' | 'history' | 'analytics' | 'settings' | 'manual-entry';
+export type TabType = 'timer' | 'tasks' | 'goals' | 'history' | 'analytics' | 'settings' | 'manual-entry' | 'break';
 export const activeTabAtom = atom<TabType>('timer');
 
 export const selectedTaskIdAtom = atom<string | undefined>(undefined);
@@ -17,6 +17,7 @@ export const editingTaskIdAtom = atom<string | null>(null);
 export const editTitleAtom = atom<string>('');
 export const editEstimateAtom = atom<number>(1);
 export const deletingTaskIdAtom = atom<string | null>(null);
+export const taskShowAddFormAtom = atom<boolean>(false);
 
 // Persistent UI State - PomodoroTimer
 export const timerShowTaskSelectorAtom = atom<boolean>(false);

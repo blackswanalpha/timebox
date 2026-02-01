@@ -3,9 +3,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAtom } from 'jotai';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlayIcon, PauseIcon, StopIcon, ExclamationTriangleIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
+import { PlayIcon, PauseIcon, StopIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 import { useTimer } from './useTimer';
-import { tasksAtom, fetchTasksAtom, dailyStatsAtom } from './atoms';
+import CustomTaskSelector from './CustomTaskSelector';
+import { tasksAtom, fetchTasksAtom, dailyStatsAtom, activeTabAtom, taskShowAddFormAtom } from './atoms';
 
 interface PomodoroTimerProps {
   selectedTaskId?: string;
@@ -31,6 +32,8 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
   const [tasks] = useAtom(tasksAtom);
   const [, fetchTasks] = useAtom(fetchTasksAtom);
   const [dailyStats] = useAtom(dailyStatsAtom);
+  const [, setActiveTab] = useAtom(activeTabAtom);
+  const [, setShowAddTask] = useAtom(taskShowAddFormAtom);
 
   const [localSelectedTask, setLocalSelectedTask] = useState<string | undefined>(selectedTaskId);
 
@@ -56,8 +59,14 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
           onClick: () => dismissCompletion(),
         },
       });
+
+      // If a focus session just completed, switch to break page
+      if (timerStatus.session_type === 'FOCUS') {
+        stopTimer();
+        setActiveTab('break');
+      }
     }
-  }, [isCompleted, dismissCompletion]);
+  }, [isCompleted, dismissCompletion, timerStatus.session_type, setActiveTab]);
 
   // Calculate progress for the circular indicator
   const progress = useMemo(() => {
@@ -292,28 +301,11 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
 
         {/* Task Selector Dropdown */}
         <div className="w-full">
-          <div className="relative">
-            <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 ml-1">
-              Currently Focusing On
-            </label>
-            <div className="relative group">
-              <select
-                value={localSelectedTask || ''}
-                onChange={(e) => handleTaskSelect(e.target.value)}
-                className="appearance-none w-full h-14 px-5 pr-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-700 dark:text-slate-200 font-semibold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all cursor-pointer shadow-sm hover:border-slate-300 dark:hover:border-slate-600"
-              >
-                <option value="">Default Focus Session</option>
-                {tasks.map(task => (
-                  <option key={task.id} value={task.id}>
-                    {task.title}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-indigo-500 transition-colors">
-                <ChevronDownIcon className="h-5 w-5" />
-              </div>
-            </div>
-          </div>
+          <CustomTaskSelector
+            tasks={tasks}
+            selectedTaskId={localSelectedTask}
+            onTaskSelect={handleTaskSelect}
+          />
         </div>
       </div>
 
@@ -334,9 +326,22 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
             ></motion.span>
             Today's Tasks
           </h3>
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
-            {tasks.filter(t => !t.completed).length} active
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+              {tasks.filter(t => !t.completed).length} active
+            </span>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                setActiveTab('tasks');
+                setShowAddTask(true);
+              }}
+              className="text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:underline"
+            >
+              + Add Task
+            </motion.button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

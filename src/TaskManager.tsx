@@ -26,7 +26,8 @@ import {
   editingTaskIdAtom,
   editTitleAtom,
   editEstimateAtom,
-  deletingTaskIdAtom
+  deletingTaskIdAtom,
+  taskShowAddFormAtom
 } from './atoms';
 
 interface TaskManagerProps {
@@ -46,7 +47,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
   const [newTaskTitle, setNewTaskTitle] = useAtom(newTaskTitleAtom);
   const [newTaskEstimate, setNewTaskEstimate] = useAtom(newTaskEstimateAtom);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [showAddForm, setShowAddForm] = useAtom(taskShowAddFormAtom);
 
   // Editing state
   const [editingTaskId, setEditingTaskId] = useAtom(editingTaskIdAtom);
@@ -187,7 +188,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-[#0f172a] rounded-3xl overflow-hidden">
-      <main className="flex-1 px-4 sm:px-8 py-6">
+      <main className="flex-1 px-4 sm:px-8 py-6 overflow-y-auto custom-scrollbar">
         <div className="max-w-[800px] mx-auto">
           {/* Page Heading */}
           <motion.div

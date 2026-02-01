@@ -23,6 +23,7 @@ import SettingsPanel from "./SettingsPanel";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import GoalsManager from "./GoalsManager";
 import ManualSessionEntry from "./ManualSessionEntry";
+import BreakPage from "./BreakPage";
 
 interface NavItem {
   id: TabType;
@@ -69,6 +70,8 @@ function App() {
         return <AnalyticsDashboard key="analytics" />;
       case 'settings':
         return <SettingsPanel key="settings" />;
+      case 'break':
+        return <BreakPage key="break" />;
       default:
         return <PomodoroTimer key="timer" selectedTaskId={selectedTaskId} onTaskSelect={setSelectedTaskId} />;
     }
