@@ -20,6 +20,8 @@ pub struct PomodoroSettings {
     pub cycles_before_long_break: i32,
     pub strict_mode: bool,
     pub auto_start_breaks: bool,
+    pub sound_enabled: bool,
+    pub sound_volume: i32,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -119,6 +121,8 @@ impl Database {
                 cycles_before_long_break INTEGER DEFAULT 4,
                 strict_mode BOOLEAN DEFAULT 0,
                 auto_start_breaks BOOLEAN DEFAULT 0,
+                sound_enabled BOOLEAN DEFAULT 1,
+                sound_volume INTEGER DEFAULT 70,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
             "#
@@ -186,6 +190,10 @@ impl Database {
         let _ = sqlx::query("ALTER TABLE goals ADD COLUMN motivation TEXT").execute(pool).await;
         let _ = sqlx::query("ALTER TABLE goals ADD COLUMN target_date DATETIME").execute(pool).await;
         let _ = sqlx::query("ALTER TABLE goals ADD COLUMN description TEXT").execute(pool).await;
+        
+        // Migration for sound settings
+        let _ = sqlx::query("ALTER TABLE pomodoro_settings ADD COLUMN sound_enabled BOOLEAN DEFAULT 1").execute(pool).await;
+        let _ = sqlx::query("ALTER TABLE pomodoro_settings ADD COLUMN sound_volume INTEGER DEFAULT 70").execute(pool).await;
 
         // Insert default user if none exists
         sqlx::query(
@@ -297,12 +305,14 @@ impl Database {
             cycles_before_long_break: 4,
             strict_mode: false,
             auto_start_breaks: false,
+            sound_enabled: true,
+            sound_volume: 70,
         };
 
         sqlx::query(
             r#"
-            INSERT INTO pomodoro_settings (user_id, focus_minutes, short_break_minutes, long_break_minutes, cycles_before_long_break, strict_mode, auto_start_breaks)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO pomodoro_settings (user_id, focus_minutes, short_break_minutes, long_break_minutes, cycles_before_long_break, strict_mode, auto_start_breaks, sound_enabled, sound_volume)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             "#,
         )
         .bind(&settings.user_id)
@@ -312,6 +322,8 @@ impl Database {
         .bind(settings.cycles_before_long_break)
         .bind(settings.strict_mode)
         .bind(settings.auto_start_breaks)
+        .bind(settings.sound_enabled)
+        .bind(settings.sound_volume)
         .execute(&self.pool)
         .await?;
 
@@ -321,7 +333,7 @@ impl Database {
     pub async fn get_settings(&self, user_id: &str) -> Result<Option<PomodoroSettings>, sqlx::Error> {
         let row = sqlx::query(
             r#"
-            SELECT user_id, focus_minutes, short_break_minutes, long_break_minutes, cycles_before_long_break, strict_mode, auto_start_breaks
+            SELECT user_id, focus_minutes, short_break_minutes, long_break_minutes, cycles_before_long_break, strict_mode, auto_start_breaks, sound_enabled, sound_volume
             FROM pomodoro_settings
             WHERE user_id = ?
             "#
@@ -339,6 +351,8 @@ impl Database {
                 cycles_before_long_break: row.get("cycles_before_long_break"),
                 strict_mode: row.get::<i32, &str>("strict_mode") != 0,
                 auto_start_breaks: row.get::<i32, &str>("auto_start_breaks") != 0,
+                sound_enabled: row.get::<i32, &str>("sound_enabled") != 0,
+                sound_volume: row.get("sound_volume"),
             }))
         } else {
             Ok(None)
@@ -350,7 +364,8 @@ impl Database {
             r#"
             UPDATE pomodoro_settings
             SET focus_minutes = ?, short_break_minutes = ?, long_break_minutes = ?, 
-                cycles_before_long_break = ?, strict_mode = ?, auto_start_breaks = ?
+                cycles_before_long_break = ?, strict_mode = ?, auto_start_breaks = ?,
+                sound_enabled = ?, sound_volume = ?
             WHERE user_id = ?
             "#,
         )
@@ -360,6 +375,8 @@ impl Database {
         .bind(settings.cycles_before_long_break)
         .bind(settings.strict_mode)
         .bind(settings.auto_start_breaks)
+        .bind(settings.sound_enabled)
+        .bind(settings.sound_volume)
         .bind(&settings.user_id)
         .execute(&self.pool)
         .await?;
@@ -839,5 +856,72 @@ impl Database {
         }).collect();
 
         Ok(tasks_with_counts)
+    }
+
+    pub async fn get_sessions_by_date_range(
+        &self,
+        user_id: &str,
+        start_date: DateTime<Utc>,
+        end_date: DateTime<Utc>,
+        session_type: Option<SessionType>,
+    ) -> Result<Vec<PomodoroSession>, sqlx::Error> {
+        let query = if session_type.is_some() {
+            r#"
+            SELECT id, user_id, task_id, session_type, start_time, end_time, duration_seconds, interrupted, interruption_count, manual_override, created_at
+            FROM pomodoro_sessions
+            WHERE user_id = ? AND start_time >= ? AND start_time < ? AND session_type = ? AND end_time IS NOT NULL
+            ORDER BY start_time DESC
+            "#
+        } else {
+            r#"
+            SELECT id, user_id, task_id, session_type, start_time, end_time, duration_seconds, interrupted, interruption_count, manual_override, created_at
+            FROM pomodoro_sessions
+            WHERE user_id = ? AND start_time >= ? AND start_time < ? AND end_time IS NOT NULL
+            ORDER BY start_time DESC
+            "#
+        };
+
+        let rows = if let Some(st) = session_type {
+            sqlx::query(query)
+                .bind(user_id)
+                .bind(start_date)
+                .bind(end_date)
+                .bind(st.to_string())
+                .fetch_all(&self.pool)
+                .await?
+        } else {
+            sqlx::query(query)
+                .bind(user_id)
+                .bind(start_date)
+                .bind(end_date)
+                .fetch_all(&self.pool)
+                .await?
+        };
+
+        let sessions = rows.into_iter().map(|row| {
+            let session_type_str: String = row.get("session_type");
+            let session_type = match session_type_str.as_str() {
+                "FOCUS" => SessionType::Focus,
+                "SHORT_BREAK" => SessionType::ShortBreak,
+                "LONG_BREAK" => SessionType::LongBreak,
+                _ => SessionType::Focus,
+            };
+
+            PomodoroSession {
+                id: row.get("id"),
+                user_id: row.get("user_id"),
+                task_id: row.get("task_id"),
+                session_type,
+                start_time: row.get("start_time"),
+                end_time: row.get("end_time"),
+                duration_seconds: row.get("duration_seconds"),
+                interrupted: row.get::<i32, &str>("interrupted") != 0,
+                interruption_count: row.get("interruption_count"),
+                manual_override: row.get::<i32, &str>("manual_override") != 0,
+                created_at: row.get("created_at"),
+            }
+        }).collect();
+
+        Ok(sessions)
     }
 }

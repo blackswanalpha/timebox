@@ -66,7 +66,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
         setActiveTab('break');
       }
     }
-  }, [isCompleted, dismissCompletion, timerStatus.session_type, setActiveTab]);
+  }, [isCompleted, dismissCompletion, timerStatus.session_type, setActiveTab, stopTimer]);
 
   // Calculate progress for the circular indicator
   const progress = useMemo(() => {
@@ -324,7 +324,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
               transition={{ repeat: Infinity, duration: 2 }}
               className="w-2 h-2 rounded-full bg-indigo-500"
             ></motion.span>
-            Today's Tasks
+            Today's 5665Tasks003
           </h3>
           <div className="flex items-center gap-3">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">

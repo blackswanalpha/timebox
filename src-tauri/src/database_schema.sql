@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS pomodoro_settings (
     cycles_before_long_break INTEGER DEFAULT 4,
     strict_mode BOOLEAN DEFAULT 0,
     auto_start_breaks BOOLEAN DEFAULT 0,
+    sound_enabled BOOLEAN DEFAULT 1,
+    sound_volume INTEGER DEFAULT 70,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

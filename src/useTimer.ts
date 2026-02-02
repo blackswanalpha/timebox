@@ -11,28 +11,9 @@ import {
   timerIsCompletedAtom
 } from './atoms';
 
-export const useTimer = () => {
-  const [timerStatus, setTimerStatus] = useAtom(timerStatusAtom);
-  const [minutes, setMinutes] = useAtom(timerMinutesAtom);
-  const [seconds, setSeconds] = useAtom(timerSecondsAtom);
-  const [isActive, setIsActive] = useAtom(timerIsActiveAtom);
-  const [isPaused, setIsPaused] = useAtom(timerIsPausedAtom);
-  const [isCompleted, setIsCompleted] = useAtom(timerIsCompletedAtom);
-
-  // Update the timer display based on the remaining time
-  useEffect(() => {
-    setMinutes(Math.floor(timerStatus.time_remaining / 60));
-    setSeconds(timerStatus.time_remaining % 60);
-    setIsActive(timerStatus.is_running && !timerStatus.is_paused);
-    setIsPaused(timerStatus.is_paused);
-
-    // Check if timer completed
-    if (timerStatus.is_running && timerStatus.time_remaining === 0 && !isCompleted) {
-      setIsCompleted(true);
-    } else if (!timerStatus.is_running && timerStatus.time_remaining > 0) {
-      setIsCompleted(false);
-    }
-  }, [timerStatus, isCompleted, setMinutes, setSeconds, setIsActive, setIsPaused, setIsCompleted]);
+export const useTimerPolling = () => {
+  const [, setTimerStatus] = useAtom(timerStatusAtom);
+  const [timerStatus] = useAtom(timerStatusAtom);
 
   // Poll for timer status updates
   useEffect(() => {
@@ -56,6 +37,30 @@ export const useTimer = () => {
       if (interval) clearInterval(interval);
     };
   }, [timerStatus.is_running, setTimerStatus]);
+};
+
+export const useTimer = () => {
+  const [timerStatus, setTimerStatus] = useAtom(timerStatusAtom);
+  const [minutes, setMinutes] = useAtom(timerMinutesAtom);
+  const [seconds, setSeconds] = useAtom(timerSecondsAtom);
+  const [isActive, setIsActive] = useAtom(timerIsActiveAtom);
+  const [isPaused, setIsPaused] = useAtom(timerIsPausedAtom);
+  const [isCompleted, setIsCompleted] = useAtom(timerIsCompletedAtom);
+
+  // Update the timer display based on the remaining time
+  useEffect(() => {
+    setMinutes(Math.floor(timerStatus.time_remaining / 60));
+    setSeconds(timerStatus.time_remaining % 60);
+    setIsActive(timerStatus.is_running && !timerStatus.is_paused);
+    setIsPaused(timerStatus.is_paused);
+
+    // Check if timer completed
+    if (timerStatus.time_remaining <= 0 && !isCompleted && (timerStatus.is_running || isActive)) {
+      setIsCompleted(true);
+    } else if (timerStatus.time_remaining > 0) {
+      setIsCompleted(false);
+    }
+  }, [timerStatus, isCompleted, setMinutes, setSeconds, setIsActive, setIsPaused, setIsCompleted]);
 
   const startTimer = useCallback(async (taskId?: string, sessionType: 'FOCUS' | 'SHORT_BREAK' | 'LONG_BREAK' = 'FOCUS') => {
     try {

@@ -44,6 +44,8 @@ pub struct SettingsUpdateRequest {
     pub cycles_before_long_break: Option<i32>,
     pub strict_mode: Option<bool>,
     pub auto_start_breaks: Option<bool>,
+    pub sound_enabled: Option<bool>,
+    pub sound_volume: Option<i32>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -116,6 +118,8 @@ pub async fn start_session(
                             cycles_before_long_break: 4,
                             strict_mode: false,
                             auto_start_breaks: false,
+                            sound_enabled: true,
+                            sound_volume: 70,
                         })
                         .focus_minutes as i64
                 ),
@@ -130,6 +134,8 @@ pub async fn start_session(
                             cycles_before_long_break: 4,
                             strict_mode: false,
                             auto_start_breaks: false,
+                            sound_enabled: true,
+                            sound_volume: 70,
                         })
                         .short_break_minutes as i64
                 ),
@@ -144,6 +150,8 @@ pub async fn start_session(
                             cycles_before_long_break: 4,
                             strict_mode: false,
                             auto_start_breaks: false,
+                            sound_enabled: true,
+                            sound_volume: 70,
                         })
                         .long_break_minutes as i64
                 ),
@@ -273,6 +281,8 @@ pub async fn update_settings(state: tauri::State<'_, Arc<AppState>>, req: Settin
             cycles_before_long_break: 4,
             strict_mode: false,
             auto_start_breaks: false,
+            sound_enabled: true,
+            sound_volume: 70,
         });
 
     let updated_settings = PomodoroSettings {
@@ -283,6 +293,8 @@ pub async fn update_settings(state: tauri::State<'_, Arc<AppState>>, req: Settin
         cycles_before_long_break: req.cycles_before_long_break.unwrap_or(current_settings.cycles_before_long_break),
         strict_mode: req.strict_mode.unwrap_or(current_settings.strict_mode),
         auto_start_breaks: req.auto_start_breaks.unwrap_or(current_settings.auto_start_breaks),
+        sound_enabled: req.sound_enabled.unwrap_or(current_settings.sound_enabled),
+        sound_volume: req.sound_volume.unwrap_or(current_settings.sound_volume),
     };
 
     state.db.update_settings(&updated_settings).await
@@ -438,4 +450,26 @@ pub async fn delete_goal(
 ) -> Result<(), String> {
     state.db.delete_goal(&goal_id).await
         .map_err(|e| e.to_string())
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct GetSessionsByDateRangeRequest {
+    pub user_id: String,
+    pub start_date: DateTime<Utc>,
+    pub end_date: DateTime<Utc>,
+    pub session_type: Option<SessionType>,
+}
+
+#[tauri::command]
+pub async fn get_sessions_by_date_range(
+    state: tauri::State<'_, Arc<AppState>>,
+    req: GetSessionsByDateRangeRequest,
+) -> Result<Vec<PomodoroSession>, String> {
+    state.db.get_sessions_by_date_range(
+        &req.user_id,
+        req.start_date,
+        req.end_date,
+        req.session_type,
+    ).await
+    .map_err(|e| e.to_string())
 }

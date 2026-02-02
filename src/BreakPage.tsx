@@ -36,10 +36,6 @@ const BreakPage: React.FC = () => {
 
                 // If auto-start is enabled and timer isn't already running, start it
                 if (settings.auto_start_breaks && !isActive) {
-                    // Determine session type: if we just came from focus, it should be break
-                    // The backend session_type might still be FOCUS if stopTimer hasn't propagated,
-                    // but usually we want to start a SHORT_BREAK or LONG_BREAK here.
-                    // For now, we'll use SHORT_BREAK as default or check cycles if we want to be fancy.
                     const nextType = timerStatus.session_type === 'LONG_BREAK' ? 'LONG_BREAK' : 'SHORT_BREAK';
                     startTimer(undefined, nextType);
                 }

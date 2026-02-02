@@ -20,6 +20,22 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_BINARY="$PROJECT_DIR/src-tauri/target/release/$BINARY_NAME"
 SOURCE_ICON="$PROJECT_DIR/src-tauri/icons/icon.png"
 
+# 0. Install Dependencies (GStreamer for Audio)
+echo "Checking and installing audio dependencies..."
+if [ -f /etc/debian_version ]; then
+    apt update -y
+    apt install -y \
+        gstreamer1.0-plugins-base \
+        gstreamer1.0-plugins-good \
+        gstreamer1.0-plugins-bad \
+        gstreamer1.0-plugins-ugly \
+        gstreamer1.0-libav \
+        gstreamer1.0-alsa \
+        gstreamer1.0-pulseaudio \
+        gstreamer1.0-pipewire \
+        libwebkit2gtk-4.1-0
+fi
+
 # Check if binary exists
 if [ ! -f "$SOURCE_BINARY" ]; then
   echo "Error: Binary not found at $SOURCE_BINARY"

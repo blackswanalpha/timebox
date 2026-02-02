@@ -1,50 +1,74 @@
 // AnalyticsDashboard.tsx
-import React, { useState, useEffect } from 'react';
-import { ChartBarIcon, ClockIcon, FlagIcon, CakeIcon, ExclamationTriangleIcon, ListBulletIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ChartBarIcon, ArrowPathIcon, ArrowDownTrayIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { apiService } from './apiService';
 import { PomodoroSession } from './types';
+import FocusHeatmap from './components/analytics/FocusHeatmap';
+import TimePeriodSelector, { TimePeriod } from './components/analytics/TimePeriodSelector';
+import HeatmapStats from './components/analytics/HeatmapStats';
+import OptimizationInsight from './components/analytics/OptimizationInsight';
+
+// Heatmap data types
+interface HeatmapData {
+  grid: number[][]; // 7 days x 24 hours, values 0-4
+  sessionsByCell: Map<string, PomodoroSession[]>;
+  peakHours: { start: number; end: number } | null;
+  mostFocusedDay: string | null;
+  mostFocusedDayDuration: number;
+  flowStateQuality: number;
+  lowProductivityHour: number | null;
+}
+
+const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const AnalyticsDashboard: React.FC = () => {
   const [sessions, setSessions] = useState<PomodoroSession[]>([]);
-  const [todayStats, setTodayStats] = useState({
-    totalFocusTime: 0,
-    completedFocusSessions: 0,
-    completedBreakSessions: 0,
-    interruptionCount: 0
-  });
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('7d');
+  const [customDateRange, setCustomDateRange] = useState<{ start?: Date; end?: Date }>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load sessions and calculate stats
-  useEffect(() => {
-    loadAndCalculateStats();
-  }, []);
+  // Calculate date range based on selected period
+  const getDateRange = (): { start: Date; end: Date } => {
+    const end = new Date();
+    const start = new Date();
 
-  const loadAndCalculateStats = async () => {
+    switch (timePeriod) {
+      case '7d':
+        start.setDate(end.getDate() - 7);
+        break;
+      case '30d':
+        start.setDate(end.getDate() - 30);
+        break;
+      case 'custom':
+        if (customDateRange.start && customDateRange.end) {
+          return { start: customDateRange.start, end: customDateRange.end };
+        }
+        // Default to 7 days if custom dates not set
+        start.setDate(end.getDate() - 7);
+        break;
+    }
+
+    return { start, end };
+  };
+
+  // Load sessions for selected date range
+  useEffect(() => {
+    loadSessions();
+  }, [timePeriod, customDateRange]);
+
+  const loadSessions = async () => {
     try {
       setIsLoading(true);
-      const loadedSessions = await apiService.getTodaySessions('default_user');
+      const { start, end } = getDateRange();
+      
+      const loadedSessions = await apiService.getSessionsByDateRange(
+        'default_user',
+        start,
+        end,
+        'FOCUS' // Only get focus sessions for the heatmap
+      );
+      
       setSessions(loadedSessions);
-      
-      // Calculate today's stats
-      const stats = loadedSessions.reduce((acc, session) => {
-        if (session.session_type === 'FOCUS') {
-          acc.totalFocusTime += session.duration_seconds || 0;
-          acc.completedFocusSessions += 1;
-        } else {
-          acc.completedBreakSessions += 1;
-        }
-        
-        acc.interruptionCount += session.interruption_count;
-        
-        return acc;
-      }, {
-        totalFocusTime: 0,
-        completedFocusSessions: 0,
-        completedBreakSessions: 0,
-        interruptionCount: 0
-      });
-      
-      setTodayStats(stats);
     } catch (error) {
       console.error('Error loading sessions:', error);
     } finally {
@@ -52,136 +76,209 @@ const AnalyticsDashboard: React.FC = () => {
     }
   };
 
-  // Convert seconds to human-readable format
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
+  // Transform sessions into heatmap data
+  const heatmapData: HeatmapData = useMemo(() => {
+    // Initialize 7x24 grid with zeros
+    const grid: number[][] = Array(7).fill(null).map(() => Array(24).fill(0));
+    const sessionsByCell = new Map<string, PomodoroSession[]>();
     
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${secs}s`;
-    } else {
-      return `${secs}s`;
+    // Day totals for calculating most focused day
+    const dayTotals: number[] = Array(7).fill(0);
+    
+    // Hour totals for calculating peak hours
+    const hourTotals: number[] = Array(24).fill(0);
+    
+    // Track interruptions for flow state quality
+    let totalSessions = 0;
+    let uninterruptedSessions = 0;
+    
+    // Aggregate sessions into grid
+    sessions.forEach((session) => {
+      const startTime = new Date(session.start_time);
+      const dayOfWeek = startTime.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      // Convert to Monday = 0 format
+      const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      const hour = startTime.getHours();
+      const duration = session.duration_seconds || 0;
+      
+      // Add to grid (accumulate duration in minutes)
+      grid[adjustedDay][hour] += duration / 60;
+      
+      // Store sessions for this cell
+      const key = `${adjustedDay}-${hour}`;
+      if (!sessionsByCell.has(key)) {
+        sessionsByCell.set(key, []);
+      }
+      sessionsByCell.get(key)!.push(session);
+      
+      // Track day totals
+      dayTotals[adjustedDay] += duration;
+      
+      // Track hour totals for peak hours calculation
+      hourTotals[hour] += duration;
+      
+      // Track flow state quality
+      totalSessions++;
+      if (session.interruption_count === 0) {
+        uninterruptedSessions++;
+      }
+    });
+    
+    // Normalize grid values to 0-4 scale
+    const maxValue = Math.max(...grid.flat());
+    if (maxValue > 0) {
+      for (let day = 0; day < 7; day++) {
+        for (let hour = 0; hour < 24; hour++) {
+          // Normalize and map to intensity levels 0-4
+          const normalized = grid[day][hour] / maxValue;
+          if (normalized === 0) {
+            grid[day][hour] = 0;
+          } else if (normalized < 0.25) {
+            grid[day][hour] = 1;
+          } else if (normalized < 0.5) {
+            grid[day][hour] = 2;
+          } else if (normalized < 0.75) {
+            grid[day][hour] = 3;
+          } else {
+            grid[day][hour] = 4;
+          }
+        }
+      }
     }
+    
+    // Calculate peak hours (consecutive hours with highest total)
+    let peakStart = 0;
+    let peakEnd = 0;
+    let maxConsecutiveSum = 0;
+    
+    // Try 2-4 hour windows
+    for (let windowSize = 2; windowSize <= 4; windowSize++) {
+      for (let start = 0; start <= 24 - windowSize; start++) {
+        const sum = hourTotals.slice(start, start + windowSize).reduce((a, b) => a + b, 0);
+        if (sum > maxConsecutiveSum) {
+          maxConsecutiveSum = sum;
+          peakStart = start;
+          peakEnd = start + windowSize;
+        }
+      }
+    }
+    
+    const peakHours = maxConsecutiveSum > 0 ? { start: peakStart, end: peakEnd } : null;
+    
+    // Calculate most focused day
+    const maxDayIndex = dayTotals.indexOf(Math.max(...dayTotals));
+    const mostFocusedDay = dayTotals[maxDayIndex] > 0 ? dayNames[maxDayIndex] : null;
+    
+    // Calculate flow state quality (percentage of uninterrupted sessions)
+    const flowStateQuality = totalSessions > 0 ? (uninterruptedSessions / totalSessions) * 100 : 0;
+    
+    // Find low productivity hour (after peak, when activity drops significantly)
+    let lowProductivityHour: number | null = null;
+    if (peakHours) {
+      // Look for significant drop after peak hours
+      for (let hour = peakHours.end; hour < 24; hour++) {
+        if (hourTotals[hour] < maxConsecutiveSum * 0.3) {
+          lowProductivityHour = hour;
+          break;
+        }
+      }
+    }
+    
+    return {
+      grid,
+      sessionsByCell,
+      peakHours,
+      mostFocusedDay,
+      mostFocusedDayDuration: dayTotals[maxDayIndex],
+      flowStateQuality,
+      lowProductivityHour,
+    };
+  }, [sessions]);
+
+  const handleCustomDateChange = (start: Date, end: Date) => {
+    setCustomDateRange({ start, end });
   };
 
   if (isLoading) {
     return (
-      <div className="card">
-        <div className="card-header">
-          <div className="card-title">
-            <ChartBarIcon className="h-6 w-6" />
-            Today's Analytics
+      <div className="flex flex-col h-full bg-white dark:bg-slate-800/50 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2.5 rounded-xl text-indigo-600 dark:text-indigo-400">
+              <ChartBarIcon className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold">Focus Heatmap</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Visualize your deep work patterns</p>
+            </div>
           </div>
         </div>
-        <div className="empty-state">
-          <ArrowPathIcon className="h-8 w-8 animate-spin" />
-          <p>Loading analytics...</p>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 text-slate-400">
+            <ArrowPathIcon className="h-8 w-8 animate-spin" />
+            <p className="text-sm font-medium">Loading analytics...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-slate-900/50 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+    <div className="flex flex-col h-full bg-white dark:bg-slate-800/50 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+      <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-wrap justify-between items-start gap-4">
         <div className="flex items-center gap-3">
           <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2.5 rounded-xl text-indigo-600 dark:text-indigo-400">
             <ChartBarIcon className="h-6 w-6" />
           </div>
-          <h2 className="text-xl font-bold">Analytics</h2>
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Focus Heatmap</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Visualize your deep work patterns and peak performance hours across the week
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors text-slate-700 dark:text-slate-300">
+            <ArrowDownTrayIcon className="h-4 w-4" /> Export PDF
+          </button>
+          <button className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20 flex items-center gap-2 hover:bg-indigo-700 transition-colors">
+            <ShareIcon className="h-4 w-4" /> Share Report
+          </button>
         </div>
       </div>
-      
+
+      {/* Main Content */}
       <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-slate-50 dark:bg-slate-800/40 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 flex flex-col gap-3 transition-all hover:border-indigo-200 dark:hover:border-indigo-900/50">
-            <div className="bg-indigo-100 dark:bg-indigo-900/30 w-10 h-10 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-              <ClockIcon className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Focus Time</p>
-              <p className="text-2xl font-black text-slate-800 dark:text-white tabular-nums">{formatTime(todayStats.totalFocusTime)}</p>
-            </div>
+        <div className="max-w-5xl mx-auto space-y-6">
+          {/* Time Period Selector */}
+          <div className="flex justify-center py-2">
+            <TimePeriodSelector
+              value={timePeriod}
+              onChange={setTimePeriod}
+              onCustomDateChange={handleCustomDateChange}
+            />
           </div>
-          
-          <div className="bg-slate-50 dark:bg-slate-800/40 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 flex flex-col gap-3 transition-all hover:border-emerald-200 dark:hover:border-emerald-900/50">
-            <div className="bg-emerald-100 dark:bg-emerald-900/30 w-10 h-10 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-              <FlagIcon className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Sessions</p>
-              <p className="text-2xl font-black text-slate-800 dark:text-white tabular-nums">{todayStats.completedFocusSessions}</p>
-            </div>
-          </div>
-          
-          <div className="bg-slate-50 dark:bg-slate-800/40 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 flex flex-col gap-3 transition-all hover:border-blue-200 dark:hover:border-blue-900/50">
-            <div className="bg-blue-100 dark:bg-blue-900/30 w-10 h-10 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400">
-              <CakeIcon className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Breaks</p>
-              <p className="text-2xl font-black text-slate-800 dark:text-white tabular-nums">{todayStats.completedBreakSessions}</p>
-            </div>
-          </div>
-          
-          <div className="bg-slate-50 dark:bg-slate-800/40 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 flex flex-col gap-3 transition-all hover:border-amber-200 dark:hover:border-amber-900/50">
-            <div className="bg-amber-100 dark:bg-amber-900/30 w-10 h-10 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-400">
-              <ExclamationTriangleIcon className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Distractions</p>
-              <p className="text-2xl font-black text-slate-800 dark:text-white tabular-nums">{todayStats.interruptionCount}</p>
-            </div>
-          </div>
-        </div>
-        
-        {/* Breakdown Section */}
-        <div className="bg-white dark:bg-slate-800/20 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden">
-          <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
-            <ListBulletIcon className="h-4.5 w-4.5 text-slate-400" />
-            <h3 className="text-sm font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">Session Breakdown</h3>
-          </div>
-          
-          {sessions.length === 0 ? (
-            <div className="p-12 flex flex-col items-center justify-center text-slate-400 gap-3 opacity-60">
-              <ChartBarIcon className="h-8 w-8" />
-              <p className="text-sm font-medium">No sessions to analyze yet.</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {sessions.map(session => (
-                <div key={session.id} className="px-6 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <span className={`w-2.5 h-2.5 rounded-full ${
-                      session.session_type === 'FOCUS' ? 'bg-indigo-500 shadow-lg shadow-indigo-500/50' : 
-                      session.session_type === 'SHORT_BREAK' ? 'bg-emerald-500' : 'bg-blue-500'
-                    }`} />
-                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                      {session.session_type === 'FOCUS' ? 'Focus Session' : 
-                       session.session_type === 'SHORT_BREAK' ? 'Short Break' : 'Long Break'}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-6">
-                    <span className="text-xs font-bold text-slate-400 tabular-nums">
-                      {session.duration_seconds ? formatTime(session.duration_seconds) : 'In progress'}
-                    </span>
-                    {session.interruption_count > 0 && (
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-500 rounded-md text-[10px] font-black border border-amber-100 dark:border-amber-900/30">
-                        <ExclamationTriangleIcon className="h-2.5 w-2.5" />
-                        {session.interruption_count}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+
+          {/* Focus Heatmap */}
+          <FocusHeatmap 
+            gridData={heatmapData.grid} 
+            sessionsByCell={heatmapData.sessionsByCell} 
+          />
+
+          {/* Statistics Cards */}
+          <HeatmapStats
+            peakPerformance={heatmapData.peakHours}
+            mostFocusedDay={heatmapData.mostFocusedDay}
+            flowStateQuality={heatmapData.flowStateQuality}
+            mostFocusedDayDuration={heatmapData.mostFocusedDayDuration}
+          />
+
+          {/* Optimization Insight */}
+          <OptimizationInsight
+            lowProductivityHour={heatmapData.lowProductivityHour}
+            hasEnoughData={sessions.length >= 3}
+          />
         </div>
       </div>
     </div>

@@ -153,5 +153,22 @@ export const apiService = {
 
   async deleteGoal(goalId: string): Promise<void> {
     return await invoke('delete_goal', { goalId: goalId });
+  },
+
+  // Date range sessions for heatmap
+  async getSessionsByDateRange(
+    userId: string,
+    startDate: Date,
+    endDate: Date,
+    sessionType?: 'FOCUS' | 'SHORT_BREAK' | 'LONG_BREAK'
+  ): Promise<PomodoroSession[]> {
+    return await invoke('get_sessions_by_date_range', {
+      req: {
+        user_id: userId,
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+        session_type: sessionType
+      }
+    });
   }
 };

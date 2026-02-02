@@ -42,7 +42,7 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self' tauri: 'unsafe-inline'; img-src 'self' tauri: asset: data:; media-src 'self' tauri: asset: data:;"
     }
   },
   "bundle": {

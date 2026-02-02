@@ -1,7 +1,7 @@
 // App.tsx
 import React from "react";
 import { useAtom } from "jotai";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 import {
   ClockIcon,
   CheckBadgeIcon,
@@ -10,7 +10,8 @@ import {
   Cog6ToothIcon,
   CubeIcon,
   SunIcon,
-  MoonIcon
+  MoonIcon,
+  StopCircleIcon
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { activeTabAtom, selectedTaskIdAtom, themeAtom, TabType } from "./atoms";
@@ -24,6 +25,10 @@ import AnalyticsDashboard from "./AnalyticsDashboard";
 import GoalsManager from "./GoalsManager";
 import ManualSessionEntry from "./ManualSessionEntry";
 import BreakPage from "./BreakPage";
+import StopwatchTimer from "./StopwatchTimer";
+import { useTimer, useTimerPolling } from "./useTimer";
+import { soundEnabledAtom, soundVolumeAtom, fetchSettingsAtom } from "./atoms";
+import { cashierSoundBase64 } from "./audioAssets";
 
 interface NavItem {
   id: TabType;
@@ -33,6 +38,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { id: 'timer', label: 'Timer', icon: <ClockIcon className="h-5.5 w-5.5" /> },
+  { id: 'stopwatch', label: 'Stopwatch', icon: <StopCircleIcon className="h-5.5 w-5.5" /> },
   { id: 'tasks', label: 'Tasks', icon: <CheckBadgeIcon className="h-5.5 w-5.5" /> },
   { id: 'goals', label: 'Goals', icon: <CubeIcon className="h-5.5 w-5.5" /> },
   { id: 'history', label: 'History', icon: <ArrowPathIcon className="h-5.5 w-5.5" /> },
@@ -44,6 +50,39 @@ function App() {
   const [activeTab, setActiveTab] = useAtom(activeTabAtom);
   const [selectedTaskId, setSelectedTaskId] = useAtom(selectedTaskIdAtom);
   const [theme, setTheme] = useAtom(themeAtom);
+  const [soundEnabled] = useAtom(soundEnabledAtom);
+  const [soundVolume] = useAtom(soundVolumeAtom);
+  const [, fetchSettings] = useAtom(fetchSettingsAtom);
+  const { isCompleted } = useTimer();
+  useTimerPolling();
+
+  // Sync settings on mount
+  React.useEffect(() => {
+    fetchSettings();
+
+    // Audio context unlock for some webviews
+    const unlockAudio = () => {
+      const audio = new Audio();
+      audio.play().catch(() => { });
+      document.removeEventListener('click', unlockAudio);
+    };
+    document.addEventListener('click', unlockAudio);
+  }, [fetchSettings]);
+
+  // Global sound completion handler
+  React.useEffect(() => {
+    if (isCompleted && soundEnabled) {
+      console.log("Playing completion sound (Base64)");
+      const audio = new Audio(cashierSoundBase64);
+      audio.volume = soundVolume / 100;
+      audio.play()
+        .then(() => console.log("Sound played successfully"))
+        .catch(err => {
+          console.error("Sound play failed:", err);
+          toast.error(`Sound playback failed: ${err.message || 'Unknown error'}`);
+        });
+    }
+  }, [isCompleted, soundEnabled, soundVolume]);
 
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
@@ -58,6 +97,8 @@ function App() {
     switch (activeTab) {
       case 'timer':
         return <PomodoroTimer key="timer" selectedTaskId={selectedTaskId} onTaskSelect={setSelectedTaskId} />;
+      case 'stopwatch':
+        return <StopwatchTimer key="stopwatch" />;
       case 'tasks':
         return <TaskManager key="tasks" onSelectTask={handleTaskSelect} selectedTaskId={selectedTaskId} />;
       case 'goals':

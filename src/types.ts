@@ -14,6 +14,8 @@ export interface PomodoroSettings {
   cycles_before_long_break: number;
   strict_mode: boolean;
   auto_start_breaks: boolean;
+  sound_enabled: boolean;
+  sound_volume: number;
 }
 
 export interface Task {
@@ -72,4 +74,13 @@ export interface SettingsUpdateRequest {
   cycles_before_long_break?: number;
   strict_mode?: boolean;
   auto_start_breaks?: boolean;
+  sound_enabled?: boolean;
+  sound_volume?: number;
+}
+
+export interface StopwatchSession {
+  id: string;
+  duration_seconds: number;
+  label?: string;
+  created_at: string;
 }
