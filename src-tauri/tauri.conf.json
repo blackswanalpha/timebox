@@ -59,7 +59,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "RWRMdH9255i37yc8jP2YRxs8MrfOzxXsnWVH6sfJ11JzZpZe+uvw6EFU",
+      "pubkey": "RWQ4+wQph1dDqoz+eVelV8g8bKGQp4xnpk51mOjIt0fFO/RahIECwLRD",
       "endpoints": [
         "https://github.com/blackswanalpha/timebox/releases/latest/download/latest.json"
       ]
