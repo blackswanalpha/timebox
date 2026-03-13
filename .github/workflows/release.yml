@@ -71,14 +71,17 @@ jobs:
 
       - name: Sanitize signing key
         shell: bash
+        env:
+          RAW_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         run: |
-          KEY=$(echo "${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" | tr -d '\n\r ')
-          echo "TAURI_SIGNING_PRIVATE_KEY=$KEY" >> $GITHUB_ENV
+          KEY=$(printf '%s' "$RAW_KEY" | tr -d '\n\r\t ')
+          echo "TAURI_SIGNING_PRIVATE_KEY=$KEY" >> "$GITHUB_ENV"
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ env.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
