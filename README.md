@@ -1,236 +1,428 @@
-# TimeBox - Productivity Timer Application
-
 <div align="center">
-  <p>A sophisticated productivity application designed to enhance focus and efficiency through the implementation of the Pomodoro Technique.</p>
-  
-  [![License](https://img.shields.io/github/license/yourusername/timebox)](LICENSE)
-  [![Version](https://img.shields.io/github/package-json/v/yourusername/timebox)](package.json)
-  [![Tauri](https://img.shields.io/badge/Built%20with-Tauri-FFC131.svg)](https://tauri.app/)
+
+<img src="splash.png" alt="TimeBox Logo" width="200" />
+
+# TimeBox
+
+### Own Your Time. Master Your Focus.
+
+A powerful, cross-platform desktop productivity app that uses the Pomodoro Technique to help you work smarter, track progress, and build lasting focus habits.
+
+[![Built with Tauri](https://img.shields.io/badge/Built_with-Tauri_2-FFC131?style=for-the-badge&logo=tauri&logoColor=white)](https://tauri.app/)
+[![React 19](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Rust](https://img.shields.io/badge/Rust-Backend-DEA584?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+
+**Windows** | **macOS** | **Linux**
+
+---
+
 </div>
 
-## 📋 Table of Contents
-- [Overview](#overview)
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Architecture](#architecture)
-- [Screenshots](#screenshots)
-- [Contributing](#contributing)
-- [License](#license)
-- [Support](#support)
+## Why TimeBox?
 
-## 🌟 Overview
+Most timer apps just count down. **TimeBox is a complete productivity system.** It combines a Pomodoro timer, task management, goal tracking, session analytics, daily reflections, and a stopwatch into one elegant native desktop app. Everything stays on your machine — no accounts, no cloud, no subscriptions. Just focus.
 
-TimeBox is a modern productivity application built with Tauri, React, and TypeScript that implements the Pomodoro Technique to help users manage their time effectively and boost productivity. The application provides users with a comprehensive suite of tools to manage their time effectively, track their tasks, and analyze their productivity patterns.
+- **Stay in flow** — Structured focus/break cycles backed by the Pomodoro Technique
+- **See your patterns** — Heatmaps and analytics reveal when you do your best work
+- **Track what matters** — Link tasks and long-term goals to every minute you invest
+- **Reflect and grow** — End-of-day clockout with mood and productivity journaling
+- **Your data, your machine** — 100% local SQLite storage, zero telemetry
 
-Built using modern web technologies and wrapped in a native desktop shell via Tauri, TimeBox offers both the flexibility of web technologies and the performance of native applications. The app combines focused work sessions with scheduled breaks to maintain concentration and prevent burnout.
+---
 
-The primary purpose of TimeBox is to help individuals improve their productivity by structuring work into focused intervals separated by short breaks. This technique, known as the Pomodoro Technique, has been proven to enhance concentration, reduce mental fatigue, and improve task completion rates. TimeBox automates and streamlines this process, allowing users to focus on their work rather than managing timers and schedules manually.
+## Screenshots
 
-## ✨ Features
+<div align="center">
 
-### Core Functionality
-- **Pomodoro Timer**: Customizable work and break intervals with visual countdown and circular progress indicator
-- **Task Management System**: Create, organize, and track tasks with estimated Pomodoro counts
-- **Session History**: Detailed logging of completed Pomodoro sessions with task associations
-- **Analytics Dashboard**: Visual insights into productivity patterns and trends through charts and graphs
-- **Settings Panel**: Extensive customization options for timer configurations and preferences
+| Focus Timer | Stopwatch |
+|:-:|:-:|
+| <img src="snapshot/snapshot01.png" alt="Focus Timer" width="340" /> | <img src="snapshot/snapshot02.png" alt="Stopwatch" width="340" /> |
 
-### User Experience
-- **Dark/Light Theme**: System-adaptive UI with comfortable viewing options for any lighting condition
-- **Responsive Design**: Adapts to different screen sizes and devices
-- **Visual Feedback**: Progress indicators and animations for better user engagement
-- **Notifications**: Elegant toast notifications for session transitions
-- **Accessibility**: Designed with modern accessibility standards in mind
+| Task Manager | Long-term Goals |
+|:-:|:-:|
+| <img src="snapshot/snapshot03.png" alt="Task Manager" width="340" /> | <img src="snapshot/snapshot04.png" alt="Goals" width="340" /> |
 
-### Advanced Features
-- **Interruption Tracking**: Records when users pause or stop sessions early for productivity analysis
-- **Strict Mode**: Prevents skipping sessions or extending break times for disciplined users
-- **Auto-start Breaks**: Configurable option to automatically begin break sessions after focus periods
-- **Data Synchronization**: Local data storage ensuring privacy and reliability
+<img src="snapshot/snapshot05.png" alt="Session History" width="400" />
 
-## 🛠️ Technologies Used
+*Session History — review every focus and break period*
 
-### Frontend Stack
-- **Frontend Framework**: [React 19](https://react.dev/) - Component-based architecture with modern features
-- **Type Safety**: [TypeScript](https://www.typescriptlang.org/) - Static type checking for code reliability
-- **UI Styling**: [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
-- **Icons**: [Lucide React](https://lucide.dev/) - Consistent, accessible icon library
-- **Animations**: [Framer Motion](https://www.framer.com/motion/) - Production-ready motion library
-- **Date Handling**: [date-fns](https://date-fns.org/) - Modern date utility library
+</div>
 
-### Backend & Native Integration
-- **Native Desktop**: [Tauri](https://tauri.app/) - Lightweight, secure native desktop applications
-- **State Management**: [Jotai](https://jotai.org/) - Primitive and flexible state management for React
-- **Build System**: [Vite](https://vitejs.dev/) - Fast development and build times with HMR
-- **Notifications**: [Sonner](https://sonner.emilkowal.ski/) - Elegant toast notifications
+---
 
-### Development Dependencies
-- **PostCSS**: For CSS processing and Tailwind integration
-- **Type Definitions**: Comprehensive TypeScript support
-- **Plugin System**: Tauri plugins for additional functionality
+## Features
 
-## 🚀 Installation
+### Pomodoro Timer
+- Customizable focus duration (default 25 min), short breaks (5 min), and long breaks (15 min)
+- Configurable cycles before a long break (default 4)
+- Large circular countdown display with progress ring
+- Play, pause, resume, and stop controls
+- Link any task to your current session
+- Audio notifications on session completion
+- **Strict Mode** — prevents skipping sessions for disciplined work
+- **Auto-start breaks** — seamlessly transition from focus to rest
 
-### Prerequisites
-- Node.js (v18 or higher)
-- npm or yarn package manager
-- Rust (for Tauri builds)
+### Stopwatch
+- Free-form time tracking for tasks that don't fit a Pomodoro
+- Label sessions for easy identification
+- Full session history with timestamps
 
-### Quick Setup
-1. Clone the repository:
+### Task Management
+- Create tasks with titles and estimated Pomodoro counts
+- Filter by All / In Progress / Completed
+- Edit, complete, or delete tasks
+- Real-time tracking of actual vs. estimated Pomodoros
+- Quick-select tasks during an active timer session
+
+### Long-term Goals
+- Set goals with target Pomodoro counts and deadlines
+- Add categories, descriptions, and personal motivations
+- Track cumulative progress over time
+- View detailed progress or manage goals from a list
+
+### Session History
+- Chronological log of every focus session, short break, and long break
+- Grouped by date with search and filtering (All Sessions / Focus / Breaks)
+- View duration, start/end times, interruption counts, and linked tasks
+- **Manual session entry** — log past work you forgot to time
+
+### Analytics Dashboard
+- **Focus heatmap** — 7-day x 24-hour grid showing when you're most productive
+- Peak productivity hours identification
+- Daily focus time totals and trends (7-day, 30-day, custom range)
+- Pomodoros-per-task breakdown
+- Break compliance and flow-state quality metrics
+- Optimization insights and recommendations
+
+### Daily Reflections
+- End-of-day **Clock Out** flow with mood and productivity ratings
+- Duration reflection, purpose reflection, and free-form notes
+- Calendar view of past reflections
+- Daily timeline showing all sessions and completed tasks chronologically
+
+### Settings & Customization
+- **Timer** — adjust all durations, cycle count, strict mode, auto-start
+- **Sound** — toggle notifications, adjust volume (0–100%)
+- **Theme** — dark / light mode with system detection
+- **Data** — all data stored locally in SQLite, no account required
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Desktop Shell** | [Tauri 2](https://tauri.app/) | Lightweight native wrapper (Rust + system WebView) |
+| **Frontend** | [React 19](https://react.dev/) + [TypeScript 5.8](https://www.typescriptlang.org/) | Component-based UI with full type safety |
+| **Styling** | [Tailwind CSS 4](https://tailwindcss.com/) | Utility-first styling |
+| **Animations** | [Framer Motion](https://www.framer.com/motion/) | Smooth, production-ready transitions |
+| **State** | [Jotai](https://jotai.org/) | Atomic state management (140+ atoms) |
+| **Database** | SQLite via [SQLx](https://github.com/launchbadge/sqlx) | Async, type-safe local persistence |
+| **Backend** | Rust 2021 + [Tokio](https://tokio.rs/) | Async command handlers and data layer |
+| **Build** | [Vite 7](https://vitejs.dev/) | Fast HMR dev server and optimized production builds |
+| **Icons** | [Heroicons](https://heroicons.com/) | Clean, consistent iconography |
+| **Notifications** | [Sonner](https://sonner.emilkowal.ski/) | Elegant toast notifications |
+| **Dates** | [date-fns](https://date-fns.org/) | Functional date utilities |
+
+---
+
+## Installation
+
+### Download Pre-built Release
+
+Head to the [Releases](https://github.com/yourusername/timebox/releases) page and download the installer for your platform:
+
+| Platform | File | Notes |
+|----------|------|-------|
+| **Windows** | `TimeBox_x.x.x_x64-setup.exe` | Windows 10/11 (64-bit) |
+| **macOS** | `TimeBox_x.x.x_x64.dmg` | macOS 10.15+ (Intel & Apple Silicon) |
+| **Ubuntu/Debian** | `TimeBox_x.x.x_amd64.deb` | Ubuntu 20.04+ / Debian 11+ |
+| **Linux (any)** | `TimeBox_x.x.x_amd64.AppImage` | Portable, runs on most distros |
+
+---
+
+### Install from Pre-built Packages
+
+#### Windows
+
+1. Download `TimeBox_x.x.x_x64-setup.exe` from [Releases](https://github.com/yourusername/timebox/releases)
+2. Double-click the installer and follow the setup wizard
+3. If Windows SmartScreen appears, click **"More info"** then **"Run anyway"** (the app is not code-signed yet)
+4. Launch TimeBox from the Start Menu or Desktop shortcut
+
+To uninstall, use **Settings > Apps > TimeBox > Uninstall** or run the uninstaller from the install directory.
+
+#### macOS
+
+1. Download `TimeBox_x.x.x_x64.dmg` from [Releases](https://github.com/yourusername/timebox/releases)
+2. Open the `.dmg` file and drag **TimeBox** into your **Applications** folder
+3. On first launch, macOS may block the app. Go to **System Settings > Privacy & Security** and click **"Open Anyway"**
+4. Launch TimeBox from the Applications folder or Spotlight
+
+To uninstall, drag TimeBox from Applications to the Trash.
+
+#### Ubuntu / Debian
+
+**Option A — .deb package (recommended):**
+
 ```bash
+# Download the .deb package from Releases, then:
+sudo dpkg -i TimeBox_x.x.x_amd64.deb
+
+# If there are missing dependencies:
+sudo apt-get install -f
+```
+
+Launch from your application menu or run `timebox-main` from the terminal.
+
+To uninstall:
+
+```bash
+sudo dpkg -r timebox-main
+```
+
+**Option B — AppImage (portable, no install):**
+
+```bash
+# Download the AppImage from Releases, then:
+chmod +x TimeBox_x.x.x_amd64.AppImage
+./TimeBox_x.x.x_amd64.AppImage
+```
+
+No installation needed — the AppImage runs directly. To "uninstall", simply delete the file.
+
+---
+
+### Build from Source
+
+Building from source is required for development or if a pre-built binary isn't available for your platform.
+
+#### Prerequisites
+
+| Requirement | Version | Install Guide |
+|-------------|---------|---------------|
+| **Node.js** | v18+ | [nodejs.org](https://nodejs.org/) |
+| **npm** | v9+ | Included with Node.js |
+| **Rust** | latest stable | [rustup.rs](https://rustup.rs/) |
+| **Tauri CLI** | v2 | Installed automatically via npm |
+
+#### Platform-specific build dependencies
+
+<details>
+<summary><strong>Windows</strong></summary>
+
+Install the following via the Visual Studio Installer:
+
+- **Microsoft Visual C++ Build Tools** (Desktop development with C++)
+- **Windows 10/11 SDK**
+
+Or install [Visual Studio 2022 Community](https://visualstudio.microsoft.com/) with the "Desktop development with C++" workload.
+
+WebView2 is included on Windows 10 (version 1803+) and Windows 11 by default.
+
+</details>
+
+<details>
+<summary><strong>macOS</strong></summary>
+
+```bash
+# Install Xcode Command Line Tools
+xcode-select --install
+```
+
+That's it — macOS includes WebView (WKWebView) and all required build tools.
+
+</details>
+
+<details>
+<summary><strong>Ubuntu / Debian</strong></summary>
+
+```bash
+sudo apt update
+sudo apt install -y \
+  libwebkit2gtk-4.1-dev \
+  build-essential \
+  curl \
+  wget \
+  file \
+  libxdo-dev \
+  libssl-dev \
+  libayatana-appindicator3-dev \
+  librsvg2-dev
+```
+
+</details>
+
+#### Build Steps
+
+```bash
+# 1. Clone the repository
 git clone https://github.com/yourusername/timebox.git
 cd timebox
-```
 
-2. Install dependencies:
-```bash
+# 2. Install frontend dependencies
 npm install
-```
 
-3. Run the development server:
-```bash
-npm run dev
-```
+# 3. Run in development mode (hot-reload)
+npm run tauri dev
 
-4. To build for production:
-```bash
+# 4. Build for production (creates native installer in src-tauri/target/release/bundle/)
 npm run tauri build
 ```
 
-### Alternative Installation Methods
-- **Development Mode**: `npm run dev` - Starts the development server with hot reload
-- **Production Build**: `npm run build` - Creates an optimized production build
-- **Tauri Development**: `npm run tauri dev` - Runs the Tauri application in development mode
-- **Tauri Production Build**: `npm run tauri build` - Creates a native desktop application
+After building, platform-specific installers are generated at:
 
-## 🎯 Usage
+```
+src-tauri/target/release/bundle/
+├── deb/        # .deb package (Ubuntu/Debian)
+├── appimage/   # .AppImage (portable Linux)
+├── msi/        # .msi installer (Windows)
+├── nsis/       # .exe installer (Windows)
+└── dmg/        # .dmg disk image (macOS)
+```
 
-### Getting Started
-1. **Initial Setup**: Launch the application and configure your timer preferences in the Settings tab
-2. **Task Creation**: Navigate to the Tasks tab to create and organize your work items
-3. **Start a Session**: Go to the Timer tab, select a task, and begin your first Pomodoro session
+---
 
-### Main Workflow
-1. **Morning Planning**: Review tasks and estimate Pomodoro requirements in the Tasks tab
-2. **Session Initiation**: Select a task and start a focus session using the Timer tab
-3. **Work Period**: Focus on the selected task until the timer completes
-4. **Break Time**: Take a short break as prompted by the application
-5. **Repeat Cycle**: Continue the pattern throughout the workday
-6. **Review Progress**: Check session history and analytics to assess productivity
-7. **Adjust Strategy**: Modify settings or task estimates based on performance data
+## Usage
 
-### Navigation Guide
-- **Timer Tab**: Central hub for Pomodoro sessions with visual countdown
-- **Tasks Tab**: Manage and organize your work items with Pomodoro estimates
-- **History Tab**: Review past sessions and analyze your productivity patterns
-- **Analytics Tab**: View charts and statistics about your work trends
-- **Settings Tab**: Customize timer durations and app preferences
+### Quick Start
 
-### Customization Options
-- **Timer Durations**: Adjust focus (default 25 min), short break (5 min), and long break (15-30 min) lengths
-- **Cycles Configuration**: Set how many focus sessions before a long break (default 4)
-- **Strict Mode**: Enable features that prevent skipping sessions or taking extended breaks
-- **Auto-start Options**: Configure whether breaks start automatically after focus sessions
-- **Theme Preferences**: Toggle between light and dark themes
-- **Notification Settings**: Customize alerts and reminders
+1. **Launch TimeBox** — the splash screen appears briefly, then the main window opens
+2. **Create tasks** — go to the Tasks tab and add what you're working on with Pomodoro estimates
+3. **Start a session** — switch to the Timer tab, select a task, and hit **Start**
+4. **Focus** — work until the timer completes (25 minutes by default)
+5. **Take a break** — TimeBox transitions to a break screen with rest suggestions
+6. **Repeat** — after 4 cycles, take a longer break to recharge
+7. **Clock Out** — at the end of your day, hit **Clock Out** to log your mood and reflections
 
-## 🏗️ Architecture
+### Daily Workflow
 
-### Component-Based Structure
-The application follows a component-based architecture with:
+| Step | Where | What |
+|------|-------|------|
+| Plan | Tasks tab | Create tasks, estimate Pomodoros |
+| Focus | Timer tab | Select task, run Pomodoro cycles |
+| Rest | Break page | Follow suggested break activities |
+| Track | History tab | Review completed sessions |
+| Analyze | Analytics tab | Study your heatmap and trends |
+| Reflect | Clock Out button | Rate your mood, log notes |
 
-- **Atoms**: Global state management using Jotai for efficient updates and synchronization
-- **Components**: Reusable UI elements (Timer, Task Manager, Analytics Dashboard, etc.)
-- **Hooks**: Custom hooks for timer logic, data persistence, and API interactions
-- **Types**: Strongly typed interfaces for all data structures ensuring type safety
+### Navigation
 
-### State Management
-TimeBox uses Jotai atoms for global state management, providing efficient updates and synchronization across components. The application maintains states for:
-- Current timer status (running, paused, completed)
-- Active session type (focus, short break, long break)
-- Selected task and navigation state
-- User settings and preferences
-- Historical session data
+TimeBox uses a sidebar with icon-based navigation:
 
-### Timer Logic
-The timer functionality is implemented in the `useTimer` custom hook, which manages:
-- Time calculation and countdown logic
-- Session transitions (focus → break → focus)
-- Pause/resume functionality
-- Completion detection and notifications
-- Data persistence for session history
+| Icon | Tab | Description |
+|------|-----|-------------|
+| Timer | **Focus Timer** | Pomodoro countdown with task linking |
+| Stopwatch | **Stopwatch** | Free-form time tracking |
+| Tasks | **Tasks** | Create and manage work items |
+| Goals | **Goals** | Long-term objective tracking |
+| History | **Session History** | Browse past sessions |
+| Analytics | **Analytics** | Heatmaps, trends, and insights |
+| Settings | **Settings** | Customize durations, sound, theme |
+| Info | **About** | App version and information |
 
-### Data Persistence
-All application data is stored locally using Tauri's file system capabilities, ensuring data privacy and reliability while maintaining cross-platform compatibility.
+---
 
-## 📸 Screenshots
+## Architecture
 
-> [!NOTE]  
-> Screenshots coming soon! Here's a preview of what you can expect from the TimeBox interface:
-> 
-> - Clean, minimalist design that reduces distractions
-> - Circular progress indicator showing remaining time
-> - Intuitive navigation between different application sections
-> - Dark/light theme support for comfortable use
-> - Detailed analytics dashboard with productivity insights
-> - Task management interface with estimation tools
+```
+┌─────────────────────────────────────────────┐
+│                   TimeBox                    │
+├──────────────────┬──────────────────────────┤
+│   React 19 UI    │    Tauri IPC Bridge      │
+│  (Vite + TS)     │    invoke() / listen()   │
+│                  │                          │
+│  Jotai Atoms ◄───┼──► commands.rs (Rust)    │
+│  140+ atoms      │    30+ IPC handlers      │
+│                  │                          │
+│  Components      │    database.rs           │
+│  25+ screens     │    SQLx async queries    │
+├──────────────────┼──────────────────────────┤
+│     Tailwind     │   SQLite (local file)    │
+│  Framer Motion   │   7 tables, UUID PKs     │
+└──────────────────┴──────────────────────────┘
+```
 
-## 👥 Contributing
+**Frontend** — React components read/write Jotai atoms. API calls go through `apiService.ts`, which wraps Tauri's `invoke()` IPC mechanism.
 
-We welcome contributions from the community! Here's how you can help:
+**Backend** — Rust command handlers in `commands.rs` process requests, manage active session state via `AppState` (with `RwLock`), and persist data through the SQLx database layer.
 
-### Development Setup
+**Database** — SQLite with 7 tables: `users`, `pomodoro_settings`, `tasks`, `pomodoro_sessions`, `goals`, `daily_reflections`, and `stopwatch_sessions`. All data stays in the app's local data directory.
+
+---
+
+## Project Structure
+
+```
+timebox-main/
+├── src/                        # React + TypeScript frontend
+│   ├── App.tsx                 # Root layout, routing, theme
+│   ├── atoms.ts                # Jotai global state (140+ atoms)
+│   ├── types.ts                # TypeScript interfaces
+│   ├── apiService.ts           # Tauri IPC bridge
+│   ├── PomodoroTimer.tsx       # Focus timer screen
+│   ├── StopwatchTimer.tsx      # Stopwatch screen
+│   ├── TaskManager.tsx         # Task CRUD
+│   ├── GoalsManager.tsx        # Goals list
+│   ├── SessionHistory.tsx      # Session log
+│   ├── AnalyticsDashboard.tsx  # Analytics + heatmap
+│   ├── SettingsPanel.tsx       # Configuration
+│   ├── BreakPage.tsx           # Break screen
+│   ├── ClockoutModal.tsx       # Daily reflection
+│   ├── DailyTimeline.tsx       # Activity timeline
+│   ├── components/             # Reusable UI components
+│   └── assets/                 # Audio files, images
+├── src-tauri/                  # Rust backend
+│   ├── src/
+│   │   ├── commands.rs         # IPC command handlers
+│   │   ├── database.rs         # SQLx data layer
+│   │   └── database_schema.sql # Schema + migrations
+│   ├── tauri.conf.json         # Tauri configuration
+│   └── icons/                  # App icons (all platforms)
+├── public/                     # Static assets
+│   ├── splash.png              # Splash screen image
+│   └── splashscreen.html       # Splash screen page
+├── snapshot/                   # App screenshots
+├── package.json                # Frontend dependencies
+├── tailwind.config.js          # Tailwind configuration
+└── vite.config.ts              # Vite build configuration
+```
+
+---
+
+## Contributing
+
+Contributions are welcome! To get started:
+
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/yourusername/timebox.git`
-3. Navigate to the project directory: `cd timebox`
-4. Install dependencies: `npm install`
-5. Start developing: `npm run dev`
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Make your changes with clear commit messages
+4. Ensure TypeScript compiles without errors: `npx tsc --noEmit`
+5. Submit a pull request to `main`
 
-### Contribution Guidelines
-1. **Feature Requests**: Open an issue to discuss new features before implementing
-2. **Bug Reports**: Create an issue with detailed reproduction steps
-3. **Pull Requests**: 
-   - Create a feature branch (`git checkout -b feature/amazing-feature`)
-   - Make your changes with clear, descriptive commit messages
-   - Add tests if applicable
-   - Update documentation as needed
-   - Submit a pull request to the `main` branch
-
-### Code Standards
-- Follow the existing code style and patterns
-- Write meaningful commit messages
-- Add comments for complex logic
-- Ensure TypeScript type safety
-- Test your changes thoroughly
-
-### Areas Needing Help
-- UI/UX improvements and accessibility enhancements
-- Additional analytics features
+**Areas where help is appreciated:**
+- UI/UX refinements and accessibility improvements
+- Additional analytics visualizations
 - Internationalization (i18n) support
-- Performance optimizations
-- Documentation improvements
+- Performance optimization
+- Test coverage
 
-## 📄 License
+---
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## License
 
-## 🆘 Support
-
-If you encounter any issues or have questions:
-
-- **Documentation**: Check the [docs](./docs/) directory for detailed guides
-- **Issues**: Report bugs or request features through the [GitHub Issues](https://github.com/yourusername/timebox/issues) page
-- **Email**: Contact the maintainers at [your-email@example.com](mailto:your-email@example.com)
-- **Discussions**: Join our community discussions for help and ideas
-
-For security vulnerabilities, please contact us directly at [security@timebox.example.com](mailto:security@timebox.example.com) rather than creating a public issue.
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <div align="center">
-  <p>Made with ❤️ to boost your productivity</p>
-  <p><em>TimeBox - Transform your time into focus</em></p>
+
+<img src="splash.png" alt="TimeBox" width="80" />
+
+**TimeBox** — Transform your time into focus.
+
+[Report a Bug](https://github.com/yourusername/timebox/issues) | [Request a Feature](https://github.com/yourusername/timebox/issues)
+
 </div>
