@@ -3,7 +3,7 @@ import { Task, StopwatchSession } from './types';
 import { apiService } from './apiService';
 
 // UI State
-export type TabType = 'timer' | 'tasks' | 'goals' | 'history' | 'analytics' | 'settings' | 'manual-entry' | 'break' | 'stopwatch';
+export type TabType = 'timer' | 'tasks' | 'goals' | 'history' | 'analytics' | 'settings' | 'about' | 'manual-entry' | 'break' | 'stopwatch';
 export const activeTabAtom = atom<TabType>('timer');
 
 export const selectedTaskIdAtom = atom<string | undefined>(undefined);

@@ -11,7 +11,8 @@ import {
   CubeIcon,
   SunIcon,
   MoonIcon,
-  StopCircleIcon
+  StopCircleIcon,
+  InformationCircleIcon
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { activeTabAtom, selectedTaskIdAtom, themeAtom, TabType } from "./atoms";
@@ -30,6 +31,7 @@ import { useTimer, useTimerPolling } from "./useTimer";
 import { soundEnabledAtom, soundVolumeAtom, fetchSettingsAtom } from "./atoms";
 import { cashierSoundBase64 } from "./audioAssets";
 import UpdateNotification from "./components/UpdateNotification";
+import AboutPage from "./AboutPage";
 
 interface NavItem {
   id: TabType;
@@ -45,6 +47,7 @@ const navItems: NavItem[] = [
   { id: 'history', label: 'History', icon: <ArrowPathIcon className="h-5.5 w-5.5" /> },
   { id: 'analytics', label: 'Analytics', icon: <ChartBarIcon className="h-5.5 w-5.5" /> },
   { id: 'settings', label: 'Settings', icon: <Cog6ToothIcon className="h-5.5 w-5.5" /> },
+  { id: 'about', label: 'About', icon: <InformationCircleIcon className="h-5.5 w-5.5" /> },
 ];
 
 function App() {
@@ -112,6 +115,8 @@ function App() {
         return <AnalyticsDashboard key="analytics" />;
       case 'settings':
         return <SettingsPanel key="settings" />;
+      case 'about':
+        return <AboutPage key="about" />;
       case 'break':
         return <BreakPage key="break" />;
       default:
