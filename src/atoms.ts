@@ -3,7 +3,7 @@ import { Task, StopwatchSession } from './types';
 import { apiService } from './apiService';
 
 // UI State
-export type TabType = 'timer' | 'tasks' | 'goals' | 'history' | 'analytics' | 'settings' | 'about' | 'manual-entry' | 'break' | 'stopwatch';
+export type TabType = 'timer' | 'tasks' | 'goals' | 'history' | 'analytics' | 'settings' | 'about' | 'manual-entry' | 'break' | 'stopwatch' | 'stream';
 export const activeTabAtom = atom<TabType>('timer');
 
 export const selectedTaskIdAtom = atom<string | undefined>(undefined);
@@ -362,7 +362,7 @@ export const saveReflectionAtom = atom(
     const generalNotes = get(reflectionNotesAtom);
     const moodRating = get(reflectionMoodAtom);
     const productivityRating = get(reflectionProductivityAtom);
-    
+
     try {
       await apiService.saveDailyReflection(
         'default_user',
@@ -374,7 +374,7 @@ export const saveReflectionAtom = atom(
         moodRating,
         productivityRating
       );
-      
+
       // Refresh the reflection
       await set(fetchReflectionAtom);
       await set(fetchMonthReflectionsAtom);
@@ -382,5 +382,70 @@ export const saveReflectionAtom = atom(
       console.error('Error saving reflection:', error);
       throw error;
     }
+  }
+);
+
+// Stream State
+export interface SavedVideo {
+  id: string;
+  url: string;
+  title: string;
+  thumbnailUrl: string;
+  savedAt: string;
+}
+
+export interface Playlist {
+  id: string;
+  name: string;
+  videos: SavedVideo[];
+  createdAt: string;
+}
+
+export type StreamRepeatMode = 'none' | 'all' | 'one';
+
+export const streamUrlInputAtom = atom<string>('');
+export const streamCurrentUrlAtom = atom<string>('');
+export const streamIsPlayingAtom = atom<boolean>(false);
+export const streamVolumeAtom = atom<number>(0.8);
+export const streamMutedAtom = atom<boolean>(false);
+
+// Playlist playback state (ephemeral)
+export const streamActivePlaylistIdAtom = atom<string | null>(null);
+export const streamPlaylistIndexAtom = atom<number>(0);
+export const streamShuffleAtom = atom<boolean>(false);
+export const streamRepeatAtom = atom<StreamRepeatMode>('none');
+
+const getInitialSavedVideos = (): SavedVideo[] => {
+  if (typeof window === 'undefined') return [];
+  const saved = localStorage.getItem('stream_saved_videos');
+  return saved ? JSON.parse(saved) : [];
+};
+
+const streamSavedVideosBaseAtom = atom<SavedVideo[]>(getInitialSavedVideos());
+
+export const streamSavedVideosAtom = atom(
+  (get) => get(streamSavedVideosBaseAtom),
+  (get, set, newValue: SavedVideo[] | ((prev: SavedVideo[]) => SavedVideo[])) => {
+    const resolved = typeof newValue === 'function' ? newValue(get(streamSavedVideosBaseAtom)) : newValue;
+    set(streamSavedVideosBaseAtom, resolved);
+    localStorage.setItem('stream_saved_videos', JSON.stringify(resolved));
+  }
+);
+
+// Playlists (persisted)
+const getInitialPlaylists = (): Playlist[] => {
+  if (typeof window === 'undefined') return [];
+  const saved = localStorage.getItem('stream_playlists');
+  return saved ? JSON.parse(saved) : [];
+};
+
+const streamPlaylistsBaseAtom = atom<Playlist[]>(getInitialPlaylists());
+
+export const streamPlaylistsAtom = atom(
+  (get) => get(streamPlaylistsBaseAtom),
+  (get, set, newValue: Playlist[] | ((prev: Playlist[]) => Playlist[])) => {
+    const resolved = typeof newValue === 'function' ? newValue(get(streamPlaylistsBaseAtom)) : newValue;
+    set(streamPlaylistsBaseAtom, resolved);
+    localStorage.setItem('stream_playlists', JSON.stringify(resolved));
   }
 );

@@ -12,7 +12,8 @@ import {
   SunIcon,
   MoonIcon,
   StopCircleIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  PlayCircleIcon
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { activeTabAtom, selectedTaskIdAtom, themeAtom, TabType } from "./atoms";
@@ -27,8 +28,10 @@ import GoalsManager from "./GoalsManager";
 import ManualSessionEntry from "./ManualSessionEntry";
 import BreakPage from "./BreakPage";
 import StopwatchTimer from "./StopwatchTimer";
+import StreamPage from "./StreamPage";
+import MiniStreamPlayer from "./MiniStreamPlayer";
 import { useTimer, useTimerPolling } from "./useTimer";
-import { soundEnabledAtom, soundVolumeAtom, fetchSettingsAtom } from "./atoms";
+import { soundEnabledAtom, soundVolumeAtom, fetchSettingsAtom, streamCurrentUrlAtom } from "./atoms";
 import { cashierSoundBase64 } from "./audioAssets";
 import UpdateNotification from "./components/UpdateNotification";
 import AboutPage from "./AboutPage";
@@ -41,6 +44,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { id: 'timer', label: 'Timer', icon: <ClockIcon className="h-5.5 w-5.5" /> },
+  { id: 'stream', label: 'Stream', icon: <PlayCircleIcon className="h-5.5 w-5.5" /> },
   { id: 'stopwatch', label: 'Stopwatch', icon: <StopCircleIcon className="h-5.5 w-5.5" /> },
   { id: 'tasks', label: 'Tasks', icon: <CheckBadgeIcon className="h-5.5 w-5.5" /> },
   { id: 'goals', label: 'Goals', icon: <CubeIcon className="h-5.5 w-5.5" /> },
@@ -57,6 +61,7 @@ function App() {
   const [soundEnabled] = useAtom(soundEnabledAtom);
   const [soundVolume] = useAtom(soundVolumeAtom);
   const [, fetchSettings] = useAtom(fetchSettingsAtom);
+  const [streamCurrentUrl] = useAtom(streamCurrentUrlAtom);
   const { isCompleted } = useTimer();
   useTimerPolling();
 
@@ -206,25 +211,38 @@ function App() {
         {/* Main Content Area */}
         <main className="flex-1 overflow-hidden relative bg-slate-50 dark:bg-[#0f172a] p-4 md:p-8">
           <div className="max-w-5xl mx-auto h-full overflow-y-auto custom-scrollbar">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 20, filter: "blur(4px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -20, filter: "blur(4px)" }}
-                transition={{
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 20,
-                  mass: 1,
-                  duration: 0.3
-                }}
-                className="h-full"
-              >
-                {renderActiveTab()}
-              </motion.div>
-            </AnimatePresence>
+            {/* StreamPage - always mounted for persistent playback */}
+            <div style={{ display: activeTab === 'stream' ? 'block' : 'none' }} className="h-full">
+              <StreamPage />
+            </div>
+
+            {/* Other tabs with animation */}
+            {activeTab !== 'stream' && (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 20, filter: "blur(4px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -20, filter: "blur(4px)" }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 260,
+                    damping: 20,
+                    mass: 1,
+                    duration: 0.3
+                  }}
+                  className="h-full"
+                >
+                  {renderActiveTab()}
+                </motion.div>
+              </AnimatePresence>
+            )}
           </div>
+
+          {/* Mini player - visible when stream is active on other tabs */}
+          <AnimatePresence>
+            {activeTab !== 'stream' && streamCurrentUrl && <MiniStreamPlayer />}
+          </AnimatePresence>
         </main>
       </div>
     </div>
