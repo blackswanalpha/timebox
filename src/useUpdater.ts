@@ -46,10 +46,22 @@ export function useUpdater() {
         setState((s) => ({ ...s, status: "idle" }));
       }
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      // No release published yet or network issue — silently ignore
+      if (
+        message.includes("Could not fetch") ||
+        message.includes("404") ||
+        message.includes("network") ||
+        message.includes("Failed to fetch")
+      ) {
+        console.log("Update check skipped:", message);
+        setState((s) => ({ ...s, status: "idle" }));
+        return;
+      }
       setState((s) => ({
         ...s,
         status: "error",
-        error: err instanceof Error ? err.message : String(err),
+        error: message,
       }));
     }
   }, []);
