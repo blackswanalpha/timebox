@@ -419,10 +419,38 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 <div align="center">
 
-<img src="splash.png" alt="TimeBox" width="80" />
+---
 
-**TimeBox** — Transform your time into focus.
+<img src="splash.png" alt="TimeBox" width="100" />
 
-[Report a Bug](https://github.com/yourusername/timebox/issues) | [Request a Feature](https://github.com/yourusername/timebox/issues)
+### Built With
+
+[![Tauri](https://img.shields.io/badge/Tauri-24C8D8?style=flat-square&logo=tauri&logoColor=white)](https://tauri.app/)
+[![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![Rust](https://img.shields.io/badge/Rust-000000?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
+
+---
+
+<br />
+
+[Report a Bug](https://github.com/yourusername/timebox/issues) · [Request a Feature](https://github.com/yourusername/timebox/issues) · [Discussions](https://github.com/yourusername/timebox/discussions)
+
+<br />
+
+If TimeBox helps you stay focused, consider giving it a star!
+
+[![GitHub stars](https://img.shields.io/github/stars/yourusername/timebox?style=social)](https://github.com/yourusername/timebox)
+
+<br />
+
+Made with love to boost your productivity
+
+**TimeBox** — *Transform your time into focus.*
+
+<sub>Copyright &copy; 2025–2026 TimeBox Contributors · <a href="LICENSE">MIT License</a></sub>
 
 </div>
