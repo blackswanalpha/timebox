@@ -1,5 +1,5 @@
 // BreakPage.tsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useAtom } from 'jotai';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -20,23 +20,34 @@ const BreakPage: React.FC = () => {
         seconds,
         stopTimer,
         startTimer,
-        isActive
+        isActive,
+        isCompleted,
+        dismissCompletion
     } = useTimer();
 
     const [currentSuggestion] = useState<BreakActivity>(getRandomSuggestion());
     const [showHowTo, setShowHowTo] = useState(false);
     const [strictMode, setStrictMode] = useState(false);
+    const [breakType, setBreakType] = useState<'SHORT_BREAK' | 'LONG_BREAK'>('SHORT_BREAK');
+    const hasAutoStarted = useRef(false);
 
-    // Load settings
+    // Load settings and determine break type
     useEffect(() => {
         const loadSettings = async () => {
             try {
                 const settings = await apiService.getSettings('default_user');
                 setStrictMode(settings.strict_mode);
 
-                // If auto-start is enabled and timer isn't already running, start it
-                if (settings.auto_start_breaks && !isActive) {
-                    const nextType = timerStatus.session_type === 'LONG_BREAK' ? 'LONG_BREAK' : 'SHORT_BREAK';
+                // Determine break type based on completed focus sessions today
+                const todaySessions = await apiService.getTodaySessions('default_user');
+                const focusCount = todaySessions.filter(s => s.session_type === 'FOCUS').length;
+                const nextType = focusCount > 0 && focusCount % settings.cycles_before_long_break === 0
+                    ? 'LONG_BREAK' : 'SHORT_BREAK';
+                setBreakType(nextType);
+
+                // Auto-start break only once
+                if (settings.auto_start_breaks && !hasAutoStarted.current) {
+                    hasAutoStarted.current = true;
                     startTimer(undefined, nextType);
                 }
             } catch (error) {
@@ -45,7 +56,20 @@ const BreakPage: React.FC = () => {
         };
 
         loadSettings();
-    }, [isActive, startTimer, timerStatus.session_type]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Handle break completion — navigate back to focus timer
+    useEffect(() => {
+        if (isCompleted) {
+            const handleBreakComplete = async () => {
+                dismissCompletion();
+                await stopTimer();
+                setActiveTab('timer');
+            };
+            handleBreakComplete();
+        }
+    }, [isCompleted, dismissCompletion, stopTimer, setActiveTab]);
 
     const handleSkip = async () => {
         await stopTimer();
@@ -71,7 +95,7 @@ const BreakPage: React.FC = () => {
     return (
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] w-full max-w-2xl mx-auto py-12 px-4">
             {/* Decorative Background Element */}
-            <div className="fixed inset-0 bg-gradient-to-t from-indigo-500/5 to-transparent pointer-events-none -z-10"></div>
+            <div className="fixed inset-0 bg-gradient-to-t from-amber-500/5 to-transparent pointer-events-none -z-10"></div>
 
             {/* Headline Section */}
             <motion.div
@@ -80,7 +104,7 @@ const BreakPage: React.FC = () => {
                 className="mb-8 text-center"
             >
                 <h1 className="text-slate-800 dark:text-white text-4xl md:text-5xl font-bold leading-tight mb-2">
-                    {timerStatus.session_type === 'LONG_BREAK' ? 'Long Break' : 'Break Time'}
+                    {breakType === 'LONG_BREAK' ? 'Long Break' : 'Break Time'}
                 </h1>
                 <p className="text-slate-500 dark:text-slate-400 text-lg">
                     Relax, recharge, and take a moment for yourself.
@@ -101,7 +125,7 @@ const BreakPage: React.FC = () => {
                         strokeWidth="4"
                     />
                     <motion.circle
-                        className="text-indigo-600 dark:text-indigo-500"
+                        className="text-amber-600 dark:text-amber-500"
                         cx="50"
                         cy="50"
                         fill="none"
@@ -129,8 +153,8 @@ const BreakPage: React.FC = () => {
             {!isActive && timerStatus.time_remaining === 0 && (
                 <div className="flex flex-col items-center gap-4 mb-4">
                     <button
-                        onClick={() => startTimer(undefined, timerStatus.session_type === 'LONG_BREAK' ? 'LONG_BREAK' : 'SHORT_BREAK')}
-                        className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all"
+                        onClick={() => startTimer(undefined, breakType)}
+                        className="px-8 py-3 bg-amber-600 text-white rounded-2xl font-bold shadow-lg shadow-amber-500/20 hover:bg-amber-700 transition-all"
                     >
                         Start Break
                     </button>
@@ -149,7 +173,7 @@ const BreakPage: React.FC = () => {
                             repeat: Infinity,
                             ease: "easeInOut"
                         }}
-                        className="absolute w-20 h-20 bg-indigo-400/20 rounded-full"
+                        className="absolute w-20 h-20 bg-amber-400/20 rounded-full"
                     />
                     <motion.div
                         animate={{
@@ -160,7 +184,7 @@ const BreakPage: React.FC = () => {
                             repeat: Infinity,
                             ease: "easeInOut"
                         }}
-                        className="w-12 h-12 bg-indigo-500/40 rounded-full"
+                        className="w-12 h-12 bg-amber-500/40 rounded-full"
                     />
                 </div>
                 <p className="text-slate-600 dark:text-slate-300 text-lg font-medium italic text-center">
@@ -179,7 +203,7 @@ const BreakPage: React.FC = () => {
                     <div className="flex-1 flex flex-col gap-4">
                         <div>
                             <div className="flex items-center gap-2 mb-2">
-                                <div className="p-1 px-2 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest">
+                                <div className="p-1 px-2 rounded-md bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase tracking-widest">
                                     {currentSuggestion.subtitle}
                                 </div>
                             </div>
@@ -193,7 +217,7 @@ const BreakPage: React.FC = () => {
 
                         <button
                             onClick={() => setShowHowTo(true)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-white text-sm font-bold w-fit hover:bg-indigo-100 dark:hover:bg-slate-700 transition-colors group"
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 dark:bg-slate-800 text-amber-600 dark:text-white text-sm font-bold w-fit hover:bg-amber-100 dark:hover:bg-slate-700 transition-colors group"
                         >
                             <InformationCircleIcon className="h-5 w-5" />
                             <span>How to perform</span>
@@ -201,9 +225,9 @@ const BreakPage: React.FC = () => {
                     </div>
 
                     <div
-                        className="w-full md:w-40 aspect-square md:aspect-auto rounded-2xl bg-indigo-100 dark:bg-slate-800 overflow-hidden relative group"
+                        className="w-full md:w-40 aspect-square md:aspect-auto rounded-2xl bg-amber-100 dark:bg-slate-800 overflow-hidden relative group"
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-blue-500/10 z-0"></div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-blue-500/10 z-0"></div>
                         <img
                             src={currentSuggestion.imageUrl}
                             alt={currentSuggestion.title}
@@ -218,7 +242,7 @@ const BreakPage: React.FC = () => {
                 <div className="mt-10">
                     <button
                         onClick={handleSkip}
-                        className="flex items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-sm font-semibold py-2 px-4 group"
+                        className="flex items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-amber-600 dark:hover:text-amber-400 transition-colors text-sm font-semibold py-2 px-4 group"
                     >
                         <span>Skip break and resume work</span>
                         <ChevronRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -257,7 +281,7 @@ const BreakPage: React.FC = () => {
                                 <div className="space-y-4">
                                     {currentSuggestion.howTo.map((step, index) => (
                                         <div key={index} className="flex gap-4">
-                                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+                                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
                                                 {index + 1}
                                             </div>
                                             <p className="text-slate-600 dark:text-slate-300">
@@ -270,7 +294,7 @@ const BreakPage: React.FC = () => {
                             <div className="p-6 bg-slate-50 dark:bg-slate-800/50 flex justify-end">
                                 <button
                                     onClick={() => setShowHowTo(false)}
-                                    className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+                                    className="px-6 py-2 bg-amber-600 text-white rounded-xl font-bold hover:bg-amber-700 transition-colors"
                                 >
                                     Got it
                                 </button>

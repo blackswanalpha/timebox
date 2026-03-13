@@ -51,7 +51,7 @@ body {
 
 /* Selection colors */
 ::selection {
-  @apply bg-indigo-500/30 text-indigo-900 dark:text-indigo-100;
+  @apply bg-amber-500/30 text-amber-900 dark:text-amber-100;
 }
 
 /* Animations */

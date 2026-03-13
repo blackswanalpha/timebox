@@ -67,6 +67,8 @@ pub struct PomodoroSession {
     pub interruption_count: i32,
     pub manual_override: bool,
     pub created_at: DateTime<Utc>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub task_title: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -82,6 +84,21 @@ pub struct Goal {
     pub target_date: Option<DateTime<Utc>>,
     pub description: Option<String>,
     pub created_at: DateTime<Utc>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct DailyReflection {
+    pub id: String,
+    pub user_id: String,
+    pub reflection_date: String,
+    pub title: Option<String>,
+    pub duration_reflection: Option<String>,
+    pub purpose_reflection: Option<String>,
+    pub general_notes: Option<String>,
+    pub mood_rating: Option<i32>,
+    pub productivity_rating: Option<i32>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 pub struct Database {
@@ -194,6 +211,27 @@ impl Database {
         // Migration for sound settings
         let _ = sqlx::query("ALTER TABLE pomodoro_settings ADD COLUMN sound_enabled BOOLEAN DEFAULT 1").execute(pool).await;
         let _ = sqlx::query("ALTER TABLE pomodoro_settings ADD COLUMN sound_volume INTEGER DEFAULT 70").execute(pool).await;
+
+        // Migration for daily reflections table
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS daily_reflections (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                reflection_date DATE NOT NULL,
+                title TEXT,
+                duration_reflection TEXT,
+                purpose_reflection TEXT,
+                general_notes TEXT,
+                mood_rating INTEGER,
+                productivity_rating INTEGER,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                UNIQUE(user_id, reflection_date)
+            )
+            "#
+        ).execute(pool).await?;
 
         // Insert default user if none exists
         sqlx::query(
@@ -503,18 +541,20 @@ impl Database {
     pub async fn get_sessions(&self, user_id: &str, limit: Option<i32>) -> Result<Vec<PomodoroSession>, sqlx::Error> {
         let query = if let Some(_lim) = limit {
             r#"
-            SELECT id, user_id, task_id, session_type, start_time, end_time, duration_seconds, interrupted, interruption_count, manual_override, created_at
-            FROM pomodoro_sessions
-            WHERE user_id = ?
-            ORDER BY start_time DESC
+            SELECT ps.id, ps.user_id, ps.task_id, ps.session_type, ps.start_time, ps.end_time, ps.duration_seconds, ps.interrupted, ps.interruption_count, ps.manual_override, ps.created_at, t.title as task_title
+            FROM pomodoro_sessions ps
+            LEFT JOIN tasks t ON ps.task_id = t.id
+            WHERE ps.user_id = ?
+            ORDER BY ps.start_time DESC
             LIMIT ?
             "#
         } else {
             r#"
-            SELECT id, user_id, task_id, session_type, start_time, end_time, duration_seconds, interrupted, interruption_count, manual_override, created_at
-            FROM pomodoro_sessions
-            WHERE user_id = ?
-            ORDER BY start_time DESC
+            SELECT ps.id, ps.user_id, ps.task_id, ps.session_type, ps.start_time, ps.end_time, ps.duration_seconds, ps.interrupted, ps.interruption_count, ps.manual_override, ps.created_at, t.title as task_title
+            FROM pomodoro_sessions ps
+            LEFT JOIN tasks t ON ps.task_id = t.id
+            WHERE ps.user_id = ?
+            ORDER BY ps.start_time DESC
             "#
         };
 
@@ -537,7 +577,7 @@ impl Database {
                 "FOCUS" => SessionType::Focus,
                 "SHORT_BREAK" => SessionType::ShortBreak,
                 "LONG_BREAK" => SessionType::LongBreak,
-                _ => SessionType::Focus, // Default fallback
+                _ => SessionType::Focus,
             };
 
             PomodoroSession {
@@ -552,6 +592,7 @@ impl Database {
                 interruption_count: row.get("interruption_count"),
                 manual_override: row.get::<i32, &str>("manual_override") != 0,
                 created_at: row.get("created_at"),
+                task_title: row.get("task_title"),
             }
         }).collect();
 
@@ -564,10 +605,11 @@ impl Database {
 
         let rows = sqlx::query(
             r#"
-            SELECT id, user_id, task_id, session_type, start_time, end_time, duration_seconds, interrupted, interruption_count, manual_override, created_at
-            FROM pomodoro_sessions
-            WHERE user_id = ? AND start_time >= ? AND start_time < ?
-            ORDER BY start_time DESC
+            SELECT ps.id, ps.user_id, ps.task_id, ps.session_type, ps.start_time, ps.end_time, ps.duration_seconds, ps.interrupted, ps.interruption_count, ps.manual_override, ps.created_at, t.title as task_title
+            FROM pomodoro_sessions ps
+            LEFT JOIN tasks t ON ps.task_id = t.id
+            WHERE ps.user_id = ? AND ps.start_time >= ? AND ps.start_time < ?
+            ORDER BY ps.start_time DESC
             "#
         )
         .bind(user_id)
@@ -582,7 +624,7 @@ impl Database {
                 "FOCUS" => SessionType::Focus,
                 "SHORT_BREAK" => SessionType::ShortBreak,
                 "LONG_BREAK" => SessionType::LongBreak,
-                _ => SessionType::Focus, // Default fallback
+                _ => SessionType::Focus,
             };
 
             PomodoroSession {
@@ -597,6 +639,7 @@ impl Database {
                 interruption_count: row.get("interruption_count"),
                 manual_override: row.get::<i32, &str>("manual_override") != 0,
                 created_at: row.get("created_at"),
+                task_title: row.get("task_title"),
             }
         }).collect();
 
@@ -764,6 +807,47 @@ impl Database {
         Ok(())
     }
 
+    pub async fn create_manual_session(
+        &self,
+        user_id: &str,
+        task_id: Option<String>,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+        duration_seconds: i32,
+    ) -> Result<PomodoroSession, sqlx::Error> {
+        let session_id = Uuid::new_v4().to_string();
+
+        sqlx::query(
+            r#"
+            INSERT INTO pomodoro_sessions (id, user_id, task_id, session_type, start_time, end_time, duration_seconds, interrupted, interruption_count, manual_override)
+            VALUES (?, ?, ?, 'FOCUS', ?, ?, ?, 0, 0, 1)
+            "#,
+        )
+        .bind(&session_id)
+        .bind(user_id)
+        .bind(&task_id)
+        .bind(&start_time)
+        .bind(&end_time)
+        .bind(duration_seconds)
+        .execute(&self.pool)
+        .await?;
+
+        Ok(PomodoroSession {
+            id: session_id,
+            user_id: user_id.to_string(),
+            task_id,
+            session_type: SessionType::Focus,
+            start_time,
+            end_time: Some(end_time),
+            duration_seconds: Some(duration_seconds),
+            interrupted: false,
+            interruption_count: 0,
+            manual_override: true,
+            created_at: Utc::now(),
+            task_title: None,
+        })
+    }
+
     pub async fn increment_interruption_count(&self, session_id: &str) -> Result<(), sqlx::Error> {
         sqlx::query(
             r#"
@@ -867,17 +951,19 @@ impl Database {
     ) -> Result<Vec<PomodoroSession>, sqlx::Error> {
         let query = if session_type.is_some() {
             r#"
-            SELECT id, user_id, task_id, session_type, start_time, end_time, duration_seconds, interrupted, interruption_count, manual_override, created_at
-            FROM pomodoro_sessions
-            WHERE user_id = ? AND start_time >= ? AND start_time < ? AND session_type = ? AND end_time IS NOT NULL
-            ORDER BY start_time DESC
+            SELECT ps.id, ps.user_id, ps.task_id, ps.session_type, ps.start_time, ps.end_time, ps.duration_seconds, ps.interrupted, ps.interruption_count, ps.manual_override, ps.created_at, t.title as task_title
+            FROM pomodoro_sessions ps
+            LEFT JOIN tasks t ON ps.task_id = t.id
+            WHERE ps.user_id = ? AND ps.start_time >= ? AND ps.start_time < ? AND ps.session_type = ? AND ps.end_time IS NOT NULL
+            ORDER BY ps.start_time DESC
             "#
         } else {
             r#"
-            SELECT id, user_id, task_id, session_type, start_time, end_time, duration_seconds, interrupted, interruption_count, manual_override, created_at
-            FROM pomodoro_sessions
-            WHERE user_id = ? AND start_time >= ? AND start_time < ? AND end_time IS NOT NULL
-            ORDER BY start_time DESC
+            SELECT ps.id, ps.user_id, ps.task_id, ps.session_type, ps.start_time, ps.end_time, ps.duration_seconds, ps.interrupted, ps.interruption_count, ps.manual_override, ps.created_at, t.title as task_title
+            FROM pomodoro_sessions ps
+            LEFT JOIN tasks t ON ps.task_id = t.id
+            WHERE ps.user_id = ? AND ps.start_time >= ? AND ps.start_time < ? AND ps.end_time IS NOT NULL
+            ORDER BY ps.start_time DESC
             "#
         };
 
@@ -919,9 +1005,238 @@ impl Database {
                 interruption_count: row.get("interruption_count"),
                 manual_override: row.get::<i32, &str>("manual_override") != 0,
                 created_at: row.get("created_at"),
+                task_title: row.get("task_title"),
             }
         }).collect();
 
         Ok(sessions)
     }
+
+    // Daily Reflection Methods
+
+    pub async fn create_or_update_reflection(
+        &self,
+        user_id: &str,
+        reflection_date: DateTime<Utc>,
+        title: Option<String>,
+        duration_reflection: Option<String>,
+        purpose_reflection: Option<String>,
+        general_notes: Option<String>,
+        mood_rating: Option<i32>,
+        productivity_rating: Option<i32>,
+    ) -> Result<DailyReflection, sqlx::Error> {
+        let reflection_id = Uuid::new_v4().to_string();
+        let now = Utc::now();
+        // Normalize to date-only string so UNIQUE(user_id, reflection_date) works
+        let date_only = reflection_date.format("%Y-%m-%d").to_string();
+
+        sqlx::query(
+            r#"
+            INSERT INTO daily_reflections (
+                id, user_id, reflection_date, title, duration_reflection,
+                purpose_reflection, general_notes, mood_rating, productivity_rating,
+                created_at, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id, reflection_date)
+            DO UPDATE SET
+                title = excluded.title,
+                duration_reflection = excluded.duration_reflection,
+                purpose_reflection = excluded.purpose_reflection,
+                general_notes = excluded.general_notes,
+                mood_rating = excluded.mood_rating,
+                productivity_rating = excluded.productivity_rating,
+                updated_at = ?
+            "#,
+        )
+        .bind(&reflection_id)
+        .bind(user_id)
+        .bind(&date_only)
+        .bind(&title)
+        .bind(&duration_reflection)
+        .bind(&purpose_reflection)
+        .bind(&general_notes)
+        .bind(mood_rating)
+        .bind(productivity_rating)
+        .bind(&now)
+        .bind(&now)
+        .bind(&now)
+        .execute(&self.pool)
+        .await?;
+
+        // Fetch the created/updated reflection
+        self.get_reflection_by_date(user_id, reflection_date).await
+            .map(|opt| opt.expect("Reflection should exist after create/update"))
+    }
+
+    pub async fn get_reflection_by_date(
+        &self,
+        user_id: &str,
+        reflection_date: DateTime<Utc>,
+    ) -> Result<Option<DailyReflection>, sqlx::Error> {
+        let date_only = reflection_date.format("%Y-%m-%d").to_string();
+        let row = sqlx::query(
+            r#"
+            SELECT id, user_id, reflection_date, title, duration_reflection,
+                   purpose_reflection, general_notes, mood_rating, productivity_rating,
+                   created_at, updated_at
+            FROM daily_reflections
+            WHERE user_id = ? AND reflection_date = ?
+            "#,
+        )
+        .bind(user_id)
+        .bind(&date_only)
+        .fetch_optional(&self.pool)
+        .await?;
+
+        if let Some(row) = row {
+            Ok(Some(DailyReflection {
+                id: row.get("id"),
+                user_id: row.get("user_id"),
+                reflection_date: row.get("reflection_date"),
+                title: row.get("title"),
+                duration_reflection: row.get("duration_reflection"),
+                purpose_reflection: row.get("purpose_reflection"),
+                general_notes: row.get("general_notes"),
+                mood_rating: row.get("mood_rating"),
+                productivity_rating: row.get("productivity_rating"),
+                created_at: row.get("created_at"),
+                updated_at: row.get("updated_at"),
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub async fn get_reflections_by_month(
+        &self,
+        user_id: &str,
+        year: i32,
+        month: i32,
+    ) -> Result<Vec<DailyReflection>, sqlx::Error> {
+        let start_date = format!("{:04}-{:02}-01", year, month);
+        let end_date = if month == 12 {
+            format!("{:04}-01-01", year + 1)
+        } else {
+            format!("{:04}-{:02}-01", year, month + 1)
+        };
+
+        let rows = sqlx::query(
+            r#"
+            SELECT id, user_id, reflection_date, title, duration_reflection,
+                   purpose_reflection, general_notes, mood_rating, productivity_rating,
+                   created_at, updated_at
+            FROM daily_reflections
+            WHERE user_id = ? AND reflection_date >= ? AND reflection_date < ?
+            ORDER BY reflection_date DESC
+            "#,
+        )
+        .bind(user_id)
+        .bind(&start_date)
+        .bind(&end_date)
+        .fetch_all(&self.pool)
+        .await?;
+
+        let reflections = rows.into_iter().map(|row| DailyReflection {
+            id: row.get("id"),
+            user_id: row.get("user_id"),
+            reflection_date: row.get("reflection_date"),
+            title: row.get("title"),
+            duration_reflection: row.get("duration_reflection"),
+            purpose_reflection: row.get("purpose_reflection"),
+            general_notes: row.get("general_notes"),
+            mood_rating: row.get("mood_rating"),
+            productivity_rating: row.get("productivity_rating"),
+            created_at: row.get("created_at"),
+            updated_at: row.get("updated_at"),
+        }).collect();
+
+        Ok(reflections)
+    }
+
+    pub async fn get_day_activities(
+        &self,
+        user_id: &str,
+        date: DateTime<Utc>,
+    ) -> Result<DayActivities, sqlx::Error> {
+        let day_start = date.date_naive().and_hms_opt(0, 0, 0).unwrap().and_local_timezone(Utc).unwrap();
+        let day_end = day_start + chrono::Duration::days(1);
+
+        // Get completed tasks for the day
+        let completed_tasks_rows = sqlx::query(
+            r#"
+            SELECT id, user_id, title, estimated_pomodoros, completed, created_at
+            FROM tasks
+            WHERE user_id = ? AND completed = 1
+            AND date(created_at) = date(?)
+            ORDER BY created_at DESC
+            "#
+        )
+        .bind(user_id)
+        .bind(&date)
+        .fetch_all(&self.pool)
+        .await?;
+
+        let completed_tasks = completed_tasks_rows.into_iter().map(|row| Task {
+            id: row.get("id"),
+            user_id: row.get("user_id"),
+            title: row.get("title"),
+            estimated_pomodoros: row.get("estimated_pomodoros"),
+            completed: row.get::<i32, &str>("completed") != 0,
+            created_at: row.get("created_at"),
+        }).collect();
+
+        // Get pomodoro sessions for the day
+        let pomodoro_rows = sqlx::query(
+            r#"
+            SELECT ps.id, ps.user_id, ps.task_id, ps.session_type, ps.start_time, ps.end_time,
+                   ps.duration_seconds, ps.interrupted, ps.interruption_count, ps.manual_override, ps.created_at, t.title as task_title
+            FROM pomodoro_sessions ps
+            LEFT JOIN tasks t ON ps.task_id = t.id
+            WHERE ps.user_id = ? AND ps.start_time >= ? AND ps.start_time < ? AND ps.session_type = 'FOCUS'
+            ORDER BY ps.start_time ASC
+            "#
+        )
+        .bind(user_id)
+        .bind(&day_start)
+        .bind(&day_end)
+        .fetch_all(&self.pool)
+        .await?;
+
+        let pomodoro_sessions = pomodoro_rows.into_iter().map(|row| {
+            let session_type_str: String = row.get("session_type");
+            let session_type = match session_type_str.as_str() {
+                "FOCUS" => SessionType::Focus,
+                "SHORT_BREAK" => SessionType::ShortBreak,
+                "LONG_BREAK" => SessionType::LongBreak,
+                _ => SessionType::Focus,
+            };
+
+            PomodoroSession {
+                id: row.get("id"),
+                user_id: row.get("user_id"),
+                task_id: row.get("task_id"),
+                session_type,
+                start_time: row.get("start_time"),
+                end_time: row.get("end_time"),
+                duration_seconds: row.get("duration_seconds"),
+                interrupted: row.get::<i32, &str>("interrupted") != 0,
+                interruption_count: row.get("interruption_count"),
+                manual_override: row.get::<i32, &str>("manual_override") != 0,
+                created_at: row.get("created_at"),
+                task_title: row.get("task_title"),
+            }
+        }).collect();
+
+        Ok(DayActivities {
+            pomodoro_sessions,
+            completed_tasks,
+        })
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct DayActivities {
+    pub pomodoro_sessions: Vec<PomodoroSession>,
+    pub completed_tasks: Vec<Task>,
 }

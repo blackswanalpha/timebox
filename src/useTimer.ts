@@ -49,8 +49,14 @@ export const useTimer = () => {
 
   // Update the timer display based on the remaining time
   useEffect(() => {
-    setMinutes(Math.floor(timerStatus.time_remaining / 60));
-    setSeconds(timerStatus.time_remaining % 60);
+    // When no session is active, show the configured focus duration instead of 00:00
+    if (!timerStatus.is_running && !timerStatus.is_paused && timerStatus.time_remaining === 0) {
+      setMinutes(timerStatus.duration_minutes || 25);
+      setSeconds(0);
+    } else {
+      setMinutes(Math.floor(timerStatus.time_remaining / 60));
+      setSeconds(timerStatus.time_remaining % 60);
+    }
     setIsActive(timerStatus.is_running && !timerStatus.is_paused);
     setIsPaused(timerStatus.is_paused);
 

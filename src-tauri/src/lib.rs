@@ -8,7 +8,7 @@ use tokio::sync::RwLock;
 
 use tauri::Manager;
 use database::Database;
-use commands::{AppState, initialize_app, start_session, pause_session, resume_session, stop_session, has_active_session, save_active_session, get_timer_status, get_settings, update_settings, create_task, get_tasks, get_sessions, get_today_sessions, create_goal, get_goals, record_interruption, update_task, delete_task, get_tasks_with_pomodoro_counts, update_goal, delete_goal, get_sessions_by_date_range};
+use commands::{AppState, initialize_app, start_session, pause_session, resume_session, stop_session, has_active_session, save_active_session, get_timer_status, get_settings, update_settings, create_task, get_tasks, get_sessions, get_today_sessions, create_goal, get_goals, record_interruption, update_task, delete_task, get_tasks_with_pomodoro_counts, update_goal, delete_goal, get_sessions_by_date_range, log_manual_session, save_daily_reflection, get_daily_reflection, get_reflections_by_month, get_day_activities};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -91,7 +91,12 @@ pub fn run() {
             get_tasks_with_pomodoro_counts,
             update_goal,
             delete_goal,
-            get_sessions_by_date_range
+            get_sessions_by_date_range,
+            log_manual_session,
+            save_daily_reflection,
+            get_daily_reflection,
+            get_reflections_by_month,
+            get_day_activities
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

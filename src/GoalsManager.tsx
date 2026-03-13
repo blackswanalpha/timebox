@@ -45,10 +45,10 @@ const GoalsManager: React.FC = () => {
 
   const getCategoryColor = (category?: string) => {
     switch (category) {
-      case 'Work': return 'text-indigo-500 bg-indigo-500/10';
+      case 'Work': return 'text-amber-500 bg-amber-500/10';
       case 'Personal': return 'text-emerald-500 bg-emerald-500/10';
       case 'Study': return 'text-amber-500 bg-amber-500/10';
-      default: return 'text-indigo-500 bg-indigo-500/10';
+      default: return 'text-amber-500 bg-amber-500/10';
     }
   };
 
@@ -56,10 +56,10 @@ const GoalsManager: React.FC = () => {
     if (progress >= 100) return 'bg-emerald-500';
 
     switch (category) {
-      case 'Work': return 'bg-indigo-500';
+      case 'Work': return 'bg-amber-500';
       case 'Personal': return 'bg-emerald-500';
       case 'Study': return 'bg-amber-500';
-      default: return 'bg-indigo-500';
+      default: return 'bg-amber-500';
     }
   };
 
@@ -79,7 +79,7 @@ const GoalsManager: React.FC = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setActiveView('create')}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all"
+          className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg shadow-amber-500/20 transition-all"
         >
           <PlusIcon className="h-5 w-5" />
           <span className="hidden sm:inline">New Goal</span>
@@ -101,7 +101,7 @@ const GoalsManager: React.FC = () => {
                 animate={{ rotate: 360 }}
                 transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
               >
-                <ArrowPathIcon className="h-10 w-10 text-indigo-500" />
+                <ArrowPathIcon className="h-10 w-10 text-amber-500" />
               </motion.div>
               <p className="font-medium">Loading goals...</p>
             </motion.div>
@@ -122,7 +122,7 @@ const GoalsManager: React.FC = () => {
               </p>
               <button
                 onClick={() => setActiveView('create')}
-                className="mt-4 text-indigo-500 font-bold hover:underline"
+                className="mt-4 text-amber-500 font-bold hover:underline"
               >
                 Create your first goal
               </button>
@@ -146,7 +146,7 @@ const GoalsManager: React.FC = () => {
                     transition={{ delay: index * 0.05 }}
                     whileHover={{ y: -5, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)" }}
                     onClick={() => handleGoalClick(goal.id)}
-                    className="group relative p-6 rounded-3xl border bg-white dark:bg-slate-800/40 border-slate-100 dark:border-slate-800 hover:border-indigo-500/30 dark:hover:border-indigo-500/30 transition-all cursor-pointer flex flex-col gap-5 backdrop-blur-sm"
+                    className="group relative p-6 rounded-3xl border bg-white dark:bg-slate-800/40 border-slate-100 dark:border-slate-800 hover:border-amber-500/30 dark:hover:border-amber-500/30 transition-all cursor-pointer flex flex-col gap-5 backdrop-blur-sm"
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-4">
@@ -197,7 +197,7 @@ const GoalsManager: React.FC = () => {
                         <ChartBarIcon className="h-4 w-4" />
                         <span>{Math.round((goal.completed_pomodoros * 25) / 60)}h Focused</span>
                       </div>
-                      <span className="text-xs font-bold text-indigo-500 group-hover:underline">
+                      <span className="text-xs font-bold text-amber-500 group-hover:underline">
                         Details &rarr;
                       </span>
                     </div>

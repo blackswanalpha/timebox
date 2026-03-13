@@ -33,7 +33,7 @@ const GoalDetails: React.FC = () => {
                 <p>Goal not found</p>
                 <button
                     onClick={() => setActiveView('list')}
-                    className="mt-4 text-indigo-500 hover:underline"
+                    className="mt-4 text-amber-500 hover:underline"
                 >
                     Back to Goals
                 </button>
@@ -90,7 +90,7 @@ const GoalDetails: React.FC = () => {
                 <div className="max-w-3xl mx-auto flex flex-col gap-8">
 
                     {/* Main Stats Card */}
-                    <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-3xl p-8 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
+                    <div className="bg-gradient-to-br from-amber-500 to-amber-700 rounded-3xl p-8 text-white shadow-xl shadow-amber-500/20 relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-8 opacity-10">
                             <FlagIcon className="h-40 w-40 transform rotate-12 translate-x-10 -translate-y-10" />
                         </div>
@@ -105,7 +105,7 @@ const GoalDetails: React.FC = () => {
                                 </div>
                                 <div className="flex flex-col items-end">
                                     <span className="text-5xl font-black">{Math.round(progress)}%</span>
-                                    <span className="text-indigo-200 font-medium">Complete</span>
+                                    <span className="text-amber-200 font-medium">Complete</span>
                                 </div>
                             </div>
 
@@ -117,7 +117,7 @@ const GoalDetails: React.FC = () => {
                                 <div className="h-4 w-full bg-black/20 rounded-full overflow-hidden backdrop-blur-sm">
                                     <div
                                         className="h-full bg-white shadow-[0_0_20px_rgba(255,255,255,0.5)] rounded-full transition-all duration-1000 ease-out"
-                                        style={{ width: `${progress}% ` }}
+                                        style={{ width: `${progress}%` }}
                                     />
                                 </div>
                             </div>

@@ -242,10 +242,145 @@ export const stopwatchLastTickAtom = atom(
 
 export const stopwatchHistoryAtom = atom(
   (get) => get(stopwatchHistoryBaseAtom),
-  (_get, set, newValue: StopwatchSession[]) => {
-    set(stopwatchHistoryBaseAtom, newValue);
-    localStorage.setItem('stopwatch_history', JSON.stringify(newValue));
+  (get, set, newValue: StopwatchSession[] | ((prev: StopwatchSession[]) => StopwatchSession[])) => {
+    const resolved = typeof newValue === 'function' ? newValue(get(stopwatchHistoryBaseAtom)) : newValue;
+    set(stopwatchHistoryBaseAtom, resolved);
+    localStorage.setItem('stopwatch_history', JSON.stringify(resolved));
   }
 );
 
 export const stopwatchLabelAtom = atom<string>('');
+
+// Daily Reflection State
+import { DailyReflection, DayActivities, TimelineActivity } from './types';
+
+export const clockoutModalOpenAtom = atom<boolean>(false);
+export const selectedReflectionDateAtom = atom<Date>(new Date());
+export const calendarViewMonthAtom = atom<Date>(new Date());
+export const currentReflectionAtom = atom<DailyReflection | null>(null);
+export const dayActivitiesAtom = atom<DayActivities>({ pomodoro_sessions: [], completed_tasks: [] });
+export const timelineActivitiesAtom = atom<TimelineActivity[]>([]);
+export const monthReflectionsAtom = atom<DailyReflection[]>([]);
+
+// Reflection Form State
+export const reflectionTitleAtom = atom<string>('');
+export const reflectionDurationAtom = atom<string>('');
+export const reflectionPurposeAtom = atom<string>('');
+export const reflectionNotesAtom = atom<string>('');
+export const reflectionMoodAtom = atom<number | undefined>(undefined);
+export const reflectionProductivityAtom = atom<number | undefined>(undefined);
+
+// Actions
+export const fetchDayActivitiesAtom = atom(
+  null,
+  async (get, set) => {
+    const date = get(selectedReflectionDateAtom);
+    try {
+      const activities = await apiService.getDayActivities('default_user', date);
+      set(dayActivitiesAtom, activities);
+      
+      // Convert to timeline activities
+      const timeline: TimelineActivity[] = [
+        ...activities.pomodoro_sessions.map(session => ({
+          id: session.id,
+          type: 'pomodoro' as const,
+          title: session.task_title || 'Focus Session',
+          duration: session.duration_seconds,
+          startTime: session.start_time,
+          endTime: session.end_time,
+          interrupted: session.interrupted
+        })),
+        ...activities.completed_tasks.map(task => ({
+          id: task.id,
+          type: 'task' as const,
+          title: task.title,
+          startTime: task.created_at,
+          completed: task.completed
+        }))
+      ].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      
+      set(timelineActivitiesAtom, timeline);
+    } catch (error) {
+      console.error('Error fetching day activities:', error);
+    }
+  }
+);
+
+export const fetchReflectionAtom = atom(
+  null,
+  async (get, set) => {
+    const date = get(selectedReflectionDateAtom);
+    try {
+      const reflection = await apiService.getDailyReflection('default_user', date);
+      set(currentReflectionAtom, reflection);
+      
+      if (reflection) {
+        set(reflectionTitleAtom, reflection.title || '');
+        set(reflectionDurationAtom, reflection.duration_reflection || '');
+        set(reflectionPurposeAtom, reflection.purpose_reflection || '');
+        set(reflectionNotesAtom, reflection.general_notes || '');
+        set(reflectionMoodAtom, reflection.mood_rating ?? undefined);
+        set(reflectionProductivityAtom, reflection.productivity_rating ?? undefined);
+      } else {
+        set(reflectionTitleAtom, '');
+        set(reflectionDurationAtom, '');
+        set(reflectionPurposeAtom, '');
+        set(reflectionNotesAtom, '');
+        set(reflectionMoodAtom, undefined);
+        set(reflectionProductivityAtom, undefined);
+      }
+    } catch (error) {
+      console.error('Error fetching reflection:', error);
+    }
+  }
+);
+
+export const fetchMonthReflectionsAtom = atom(
+  null,
+  async (get, set) => {
+    const date = get(calendarViewMonthAtom);
+    try {
+      const reflections = await apiService.getReflectionsByMonth(
+        'default_user',
+        date.getFullYear(),
+        date.getMonth() + 1
+      );
+      set(monthReflectionsAtom, reflections);
+    } catch (error) {
+      console.error('Error fetching month reflections:', error);
+    }
+  }
+);
+
+export const saveReflectionAtom = atom(
+  null,
+  async (get, set) => {
+    const date = get(selectedReflectionDateAtom);
+    const title = get(reflectionTitleAtom);
+    const durationReflection = get(reflectionDurationAtom);
+    const purposeReflection = get(reflectionPurposeAtom);
+    const generalNotes = get(reflectionNotesAtom);
+    const moodRating = get(reflectionMoodAtom);
+    const productivityRating = get(reflectionProductivityAtom);
+    
+    try {
+      await apiService.saveDailyReflection(
+        'default_user',
+        date,
+        title.trim() || undefined,
+        durationReflection.trim() || undefined,
+        purposeReflection.trim() || undefined,
+        generalNotes.trim() || undefined,
+        moodRating,
+        productivityRating
+      );
+      
+      // Refresh the reflection
+      await set(fetchReflectionAtom);
+      await set(fetchMonthReflectionsAtom);
+    } catch (error) {
+      console.error('Error saving reflection:', error);
+      throw error;
+    }
+  }
+);

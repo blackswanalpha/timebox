@@ -6,7 +6,9 @@ import {
   PomodoroSession,
   Goal,
   TimerStatus,
-  SettingsUpdateRequest
+  SettingsUpdateRequest,
+  DailyReflection,
+  DayActivities
 } from './types';
 
 export const apiService = {
@@ -155,6 +157,25 @@ export const apiService = {
     return await invoke('delete_goal', { goalId: goalId });
   },
 
+  // Manual session logging
+  async logManualSession(
+    userId: string,
+    taskId: string | undefined,
+    startTime: Date,
+    endTime: Date,
+    durationSeconds: number
+  ): Promise<PomodoroSession> {
+    return await invoke('log_manual_session', {
+      req: {
+        user_id: userId,
+        task_id: taskId || null,
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+        duration_seconds: durationSeconds
+      }
+    });
+  },
+
   // Date range sessions for heatmap
   async getSessionsByDateRange(
     userId: string,
@@ -168,6 +189,69 @@ export const apiService = {
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
         session_type: sessionType
+      }
+    });
+  },
+
+  // Daily Reflection functions
+  async saveDailyReflection(
+    userId: string,
+    reflectionDate: Date,
+    title?: string,
+    durationReflection?: string,
+    purposeReflection?: string,
+    generalNotes?: string,
+    moodRating?: number,
+    productivityRating?: number
+  ): Promise<DailyReflection> {
+    return await invoke('save_daily_reflection', {
+      req: {
+        user_id: userId,
+        reflection_date: reflectionDate.toISOString(),
+        title,
+        duration_reflection: durationReflection,
+        purpose_reflection: purposeReflection,
+        general_notes: generalNotes,
+        mood_rating: moodRating,
+        productivity_rating: productivityRating
+      }
+    });
+  },
+
+  async getDailyReflection(
+    userId: string,
+    reflectionDate: Date
+  ): Promise<DailyReflection | null> {
+    return await invoke('get_daily_reflection', {
+      req: {
+        user_id: userId,
+        reflection_date: reflectionDate.toISOString()
+      }
+    });
+  },
+
+  async getReflectionsByMonth(
+    userId: string,
+    year: number,
+    month: number
+  ): Promise<DailyReflection[]> {
+    return await invoke('get_reflections_by_month', {
+      req: {
+        user_id: userId,
+        year,
+        month
+      }
+    });
+  },
+
+  async getDayActivities(
+    userId: string,
+    date: Date
+  ): Promise<DayActivities> {
+    return await invoke('get_day_activities', {
+      req: {
+        user_id: userId,
+        date: date.toISOString()
       }
     });
   }

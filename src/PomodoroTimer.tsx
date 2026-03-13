@@ -151,7 +151,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            className="px-4 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/50 block w-fit mx-auto"
+            className="px-4 py-1.5 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-widest border border-amber-100 dark:border-amber-800/50 block w-fit mx-auto"
           >
             {getSessionLabel()}
           </motion.span>
@@ -182,7 +182,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
           />
           {/* Progress Circle */}
           <motion.circle
-            className="text-indigo-600 dark:text-indigo-500 shadow-indigo-500"
+            className="text-amber-600 dark:text-amber-500 shadow-amber-500"
             cx="50"
             cy="50"
             fill="none"
@@ -212,7 +212,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
                 {formatTime(minutes)}
               </motion.span>
             </AnimatePresence>
-            <span className="text-5xl md:text-6xl font-light text-indigo-400/50 mx-1 animate-pulse">:</span>
+            <span className="text-5xl md:text-6xl font-light text-amber-400/50 mx-1 animate-pulse">:</span>
             <AnimatePresence mode="popLayout">
               <motion.span
                 key={seconds}
@@ -237,7 +237,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleStart}
-              className="flex-1 flex items-center justify-center gap-3 rounded-2xl h-16 bg-indigo-600 text-white text-xl font-bold hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-500/30 hover:shadow-indigo-500/40"
+              className="flex-1 flex items-center justify-center gap-3 rounded-2xl h-16 bg-amber-600 text-white text-xl font-bold hover:bg-amber-700 transition-all shadow-xl shadow-amber-500/30 hover:shadow-amber-500/40"
             >
               <PlayIcon className="h-6 w-6" />
               <span>Start</span>
@@ -254,7 +254,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleResume}
-                    className="flex-1 flex items-center justify-center gap-3 rounded-2xl h-16 bg-indigo-600 text-white text-xl font-bold hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-500/30"
+                    className="flex-1 flex items-center justify-center gap-3 rounded-2xl h-16 bg-amber-600 text-white text-xl font-bold hover:bg-amber-700 transition-all shadow-xl shadow-amber-500/30"
                   >
                     <PlayIcon className="h-6 w-6" />
                     <span>Resume</span>
@@ -322,9 +322,9 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
             <motion.span
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ repeat: Infinity, duration: 2 }}
-              className="w-2 h-2 rounded-full bg-indigo-500"
+              className="w-2 h-2 rounded-full bg-amber-500"
             ></motion.span>
-            Today's 5665Tasks003
+            Today's Tasks
           </h3>
           <div className="flex items-center gap-3">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
@@ -337,7 +337,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
                 setActiveTab('tasks');
                 setShowAddTask(true);
               }}
-              className="text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:underline"
+              className="text-amber-600 dark:text-amber-400 text-xs font-bold hover:underline"
             >
               + Add Task
             </motion.button>
@@ -359,10 +359,10 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
                   transition={{ delay: index * 0.05 }}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/50 hover:border-indigo-500/30 transition-all group cursor-default"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/50 hover:border-amber-500/30 transition-all group cursor-default"
                 >
                   <div className="flex flex-col min-w-0 pr-4">
-                    <span className="text-base font-bold text-slate-700 dark:text-slate-200 truncate group-hover:text-indigo-500 transition-colors">
+                    <span className="text-base font-bold text-slate-700 dark:text-slate-200 truncate group-hover:text-amber-500 transition-colors">
                       {task.title}
                     </span>
                     <div className="flex items-center gap-2 mt-1">
@@ -374,7 +374,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="w-20 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                       <motion.div
-                        className="h-full bg-indigo-500 rounded-full"
+                        className="h-full bg-amber-500 rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${taskProgress}%` }}
                         transition={{ duration: 1, delay: 0.3 }}
@@ -440,7 +440,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ selectedTaskId, onTaskSel
             {stat.type === 'progress' ? (
               <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full mt-4 overflow-hidden">
                 <motion.div
-                  className="h-full bg-indigo-500 rounded-full"
+                  className="h-full bg-amber-500 rounded-full"
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.min((completedPomodoros / dailyGoal) * 100, 100)}%` }}
                   transition={{ duration: 1.5, delay: 0.6 }}

@@ -84,3 +84,34 @@ export interface StopwatchSession {
   label?: string;
   created_at: string;
 }
+
+export interface DailyReflection {
+  id: string;
+  user_id: string;
+  reflection_date: string;
+  title?: string;
+  duration_reflection?: string;
+  purpose_reflection?: string;
+  general_notes?: string;
+  mood_rating?: number;
+  productivity_rating?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DayActivities {
+  pomodoro_sessions: PomodoroSession[];
+  completed_tasks: Task[];
+}
+
+export interface TimelineActivity {
+  id: string;
+  type: 'pomodoro' | 'task' | 'stopwatch';
+  title: string;
+  duration?: number;
+  startTime: string;
+  endTime?: string;
+  completed?: boolean;
+  interrupted?: boolean;
+  description?: string;
+}

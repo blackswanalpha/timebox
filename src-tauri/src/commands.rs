@@ -3,7 +3,7 @@ use tokio::sync::RwLock;
 use chrono::{DateTime, Utc, Duration};
 use serde::{Deserialize, Serialize};
 
-use crate::database::{Database, PomodoroSettings, Task, PomodoroSession, SessionType, Goal};
+use crate::database::{Database, PomodoroSettings, Task, PomodoroSession, SessionType, Goal, DailyReflection, DayActivities};
 
 // Global state to hold the database connection and active session
 pub struct AppState {
@@ -15,6 +15,7 @@ pub struct ActiveSession {
     pub session: PomodoroSession,
     pub start_time: DateTime<Utc>,
     pub remaining_duration: Duration,
+    pub total_duration: Duration,
     pub is_paused: bool,
 }
 
@@ -32,6 +33,7 @@ pub struct TimerStatusResponse {
     pub is_paused: bool,
     pub session_type: SessionType,
     pub task_title: Option<String>,
+    pub duration_minutes: i64,
     pub interruption_count: i32,
 }
 
@@ -95,6 +97,7 @@ pub async fn start_session(
         interruption_count: 0,
         manual_override: false,
         created_at: now,
+        task_title: None,
     };
     
     state.db.create_session(&session).await
@@ -102,60 +105,32 @@ pub async fn start_session(
     
     // Update active session in state
     {
+        let settings = state.db.get_settings(&user_id).await
+            .map_err(|e| e.to_string())?
+            .unwrap_or_else(|| PomodoroSettings {
+                user_id: user_id.clone(),
+                focus_minutes: 25,
+                short_break_minutes: 5,
+                long_break_minutes: 15,
+                cycles_before_long_break: 4,
+                strict_mode: false,
+                auto_start_breaks: false,
+                sound_enabled: true,
+                sound_volume: 70,
+            });
+
+        let duration = match session_type {
+            SessionType::Focus => Duration::minutes(settings.focus_minutes as i64),
+            SessionType::ShortBreak => Duration::minutes(settings.short_break_minutes as i64),
+            SessionType::LongBreak => Duration::minutes(settings.long_break_minutes as i64),
+        };
+
         let mut active_session = state.active_session.write().await;
         *active_session = Some(ActiveSession {
             session: session.clone(),
             start_time: now,
-            remaining_duration: match session_type {
-                SessionType::Focus => Duration::minutes(
-                    state.db.get_settings(&user_id).await
-                        .map_err(|e| e.to_string())?
-                        .unwrap_or_else(|| PomodoroSettings {
-                            user_id: user_id.clone(),
-                            focus_minutes: 25,
-                            short_break_minutes: 5,
-                            long_break_minutes: 15,
-                            cycles_before_long_break: 4,
-                            strict_mode: false,
-                            auto_start_breaks: false,
-                            sound_enabled: true,
-                            sound_volume: 70,
-                        })
-                        .focus_minutes as i64
-                ),
-                SessionType::ShortBreak => Duration::minutes(
-                    state.db.get_settings(&user_id).await
-                        .map_err(|e| e.to_string())?
-                        .unwrap_or_else(|| PomodoroSettings {
-                            user_id: user_id.clone(),
-                            focus_minutes: 25,
-                            short_break_minutes: 5,
-                            long_break_minutes: 15,
-                            cycles_before_long_break: 4,
-                            strict_mode: false,
-                            auto_start_breaks: false,
-                            sound_enabled: true,
-                            sound_volume: 70,
-                        })
-                        .short_break_minutes as i64
-                ),
-                SessionType::LongBreak => Duration::minutes(
-                    state.db.get_settings(&user_id).await
-                        .map_err(|e| e.to_string())?
-                        .unwrap_or_else(|| PomodoroSettings {
-                            user_id: user_id.clone(),
-                            focus_minutes: 25,
-                            short_break_minutes: 5,
-                            long_break_minutes: 15,
-                            cycles_before_long_break: 4,
-                            strict_mode: false,
-                            auto_start_breaks: false,
-                            sound_enabled: true,
-                            sound_volume: 70,
-                        })
-                        .long_break_minutes as i64
-                ),
-            },
+            remaining_duration: duration,
+            total_duration: duration,
             is_paused: false,
         });
     }
@@ -190,7 +165,15 @@ pub async fn resume_session(state: tauri::State<'_, Arc<AppState>>) -> Result<()
 pub async fn stop_session(state: tauri::State<'_, Arc<AppState>>) -> Result<(), String> {
     let mut active_session = state.active_session.write().await;
     if let Some(session) = active_session.take() {
-        let duration = (Utc::now() - session.start_time).num_seconds() as i32;
+        // Calculate time remaining correctly
+        let time_remaining = if session.is_paused {
+            session.remaining_duration.num_seconds()
+        } else {
+            let elapsed = (Utc::now() - session.start_time).num_seconds();
+            (session.remaining_duration.num_seconds() - elapsed).max(0)
+        };
+        // Total actual duration = total configured duration - remaining
+        let duration = (session.total_duration.num_seconds() - time_remaining) as i32;
         state.db.update_session(&session.session.id, Utc::now(), duration)
             .await
             .map_err(|e| e.to_string())?;
@@ -208,7 +191,13 @@ pub async fn has_active_session(state: tauri::State<'_, Arc<AppState>>) -> Resul
 pub async fn save_active_session(state: tauri::State<'_, Arc<AppState>>) -> Result<(), String> {
     let mut active_session = state.active_session.write().await;
     if let Some(session) = active_session.take() {
-        let duration = (Utc::now() - session.start_time).num_seconds() as i32;
+        let time_remaining = if session.is_paused {
+            session.remaining_duration.num_seconds()
+        } else {
+            let elapsed = (Utc::now() - session.start_time).num_seconds();
+            (session.remaining_duration.num_seconds() - elapsed).max(0)
+        };
+        let duration = (session.total_duration.num_seconds() - time_remaining) as i32;
         state.db.update_session(&session.session.id, Utc::now(), duration)
             .await
             .map_err(|e| e.to_string())?;
@@ -248,6 +237,7 @@ pub async fn get_timer_status(state: tauri::State<'_, Arc<AppState>>) -> Result<
             is_paused: session.is_paused,
             session_type: session.session.session_type.clone(),
             task_title,
+            duration_minutes: session.total_duration.num_minutes(),
             interruption_count: session.session.interruption_count,
         })
     } else {
@@ -258,6 +248,7 @@ pub async fn get_timer_status(state: tauri::State<'_, Arc<AppState>>) -> Result<
             is_paused: false,
             session_type: SessionType::Focus,
             task_title: None,
+            duration_minutes: 25,
             interruption_count: 0,
         })
     }
@@ -472,4 +463,108 @@ pub async fn get_sessions_by_date_range(
         req.session_type,
     ).await
     .map_err(|e| e.to_string())
+}
+
+// Manual Session Logging
+
+#[derive(Serialize, Deserialize)]
+pub struct LogManualSessionRequest {
+    pub user_id: String,
+    pub task_id: Option<String>,
+    pub start_time: DateTime<Utc>,
+    pub end_time: DateTime<Utc>,
+    pub duration_seconds: i32,
+}
+
+#[tauri::command]
+pub async fn log_manual_session(
+    state: tauri::State<'_, Arc<AppState>>,
+    req: LogManualSessionRequest,
+) -> Result<PomodoroSession, String> {
+    state.db.create_manual_session(
+        &req.user_id,
+        req.task_id,
+        req.start_time,
+        req.end_time,
+        req.duration_seconds,
+    ).await
+    .map_err(|e| e.to_string())
+}
+
+// Daily Reflection Commands
+
+#[derive(Serialize, Deserialize)]
+pub struct SaveReflectionRequest {
+    pub user_id: String,
+    pub reflection_date: DateTime<Utc>,
+    pub title: Option<String>,
+    pub duration_reflection: Option<String>,
+    pub purpose_reflection: Option<String>,
+    pub general_notes: Option<String>,
+    pub mood_rating: Option<i32>,
+    pub productivity_rating: Option<i32>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct GetReflectionRequest {
+    pub user_id: String,
+    pub reflection_date: DateTime<Utc>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct GetReflectionsByMonthRequest {
+    pub user_id: String,
+    pub year: i32,
+    pub month: i32,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct GetDayActivitiesRequest {
+    pub user_id: String,
+    pub date: DateTime<Utc>,
+}
+
+#[tauri::command]
+pub async fn save_daily_reflection(
+    state: tauri::State<'_, Arc<AppState>>,
+    req: SaveReflectionRequest,
+) -> Result<DailyReflection, String> {
+    state.db.create_or_update_reflection(
+        &req.user_id,
+        req.reflection_date,
+        req.title,
+        req.duration_reflection,
+        req.purpose_reflection,
+        req.general_notes,
+        req.mood_rating,
+        req.productivity_rating,
+    ).await
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn get_daily_reflection(
+    state: tauri::State<'_, Arc<AppState>>,
+    req: GetReflectionRequest,
+) -> Result<Option<DailyReflection>, String> {
+    state.db.get_reflection_by_date(&req.user_id, req.reflection_date).await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn get_reflections_by_month(
+    state: tauri::State<'_, Arc<AppState>>,
+    req: GetReflectionsByMonthRequest,
+) -> Result<Vec<DailyReflection>, String> {
+    state.db.get_reflections_by_month(&req.user_id, req.year, req.month).await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn get_day_activities(
+    state: tauri::State<'_, Arc<AppState>>,
+    req: GetDayActivitiesRequest,
+) -> Result<DayActivities, String> {
+    state.db.get_day_activities(&req.user_id, req.date).await
+        .map_err(|e| e.to_string())
 }

@@ -53,11 +53,9 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
   const [editingTaskId, setEditingTaskId] = useAtom(editingTaskIdAtom);
   const [editTitle, setEditTitle] = useAtom(editTitleAtom);
   const [editEstimate, setEditEstimate] = useAtom(editEstimateAtom);
-  const [, setIsEditing] = useState(false);
 
   // Delete confirmation state
   const [deletingTaskId, setDeletingTaskId] = useAtom(deletingTaskIdAtom);
-  const [, setIsDeleting] = useState(false);
 
   // Load tasks on component mount
   useEffect(() => {
@@ -102,21 +100,18 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
     setEditingTaskId(task.id);
     setEditTitle(task.title);
     setEditEstimate(task.estimated_pomodoros);
-    setIsEditing(true);
   };
 
   const cancelEditing = () => {
     setEditingTaskId(null);
     setEditTitle('');
     setEditEstimate(1);
-    setIsEditing(false);
   };
 
   const handleUpdateTask = async (taskId: string) => {
     if (!editTitle.trim()) return;
 
     try {
-      setIsEditing(true);
       await apiService.updateTask(taskId, {
         title: editTitle.trim(),
         estimated_pomodoros: editEstimate
@@ -126,7 +121,6 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
       await fetchTasks();
 
       setEditingTaskId(null);
-      setIsEditing(false);
     } catch (error) {
       console.error('Error updating task:', error);
       toast.error('Failed to update task');
@@ -158,7 +152,6 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
 
   const handleDeleteTask = async (taskId: string) => {
     try {
-      setIsDeleting(true);
       await apiService.deleteTask(taskId);
 
       toast.success('Task deleted');
@@ -169,7 +162,6 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
       console.error('Error deleting task:', error);
       toast.error('Failed to delete task');
     } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -215,7 +207,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                   {activeTab === item.id && (
                     <motion.div
                       layoutId="taskTabActive"
-                      className="absolute bottom-0 left-0 right-0 h-[3px] bg-indigo-600 rounded-full"
+                      className="absolute bottom-0 left-0 right-0 h-[3px] bg-amber-600 rounded-full"
                     />
                   )}
                 </button>
@@ -237,7 +229,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                    className="rounded-full h-8 w-8 border-b-2 border-indigo-600"
+                    className="rounded-full h-8 w-8 border-b-2 border-amber-600"
                   />
                   <p>Loading tasks...</p>
                 </motion.div>
@@ -273,8 +265,8 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                         delay: index * 0.02
                       }}
                       className={`group flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white dark:bg-[#111822] border rounded-xl px-4 py-3 justify-between transition-all ${selectedTaskId === task.id
-                        ? 'border-indigo-500 shadow-md shadow-indigo-500/10'
-                        : 'border-slate-200 dark:border-[#233348] hover:border-indigo-400 dark:hover:border-indigo-600'
+                        ? 'border-amber-500 shadow-md shadow-amber-500/10'
+                        : 'border-slate-200 dark:border-[#233348] hover:border-amber-400 dark:hover:border-amber-600'
                         } ${task.completed ? 'opacity-75' : ''}`}
                     >
                       {editingTaskId === task.id ? (
@@ -286,7 +278,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                             type="text"
                             value={editTitle}
                             onChange={(e) => setEditTitle(e.target.value)}
-                            className="w-full bg-slate-50 dark:bg-slate-900 border border-indigo-300 dark:border-indigo-700 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            className="w-full bg-slate-50 dark:bg-slate-900 border border-amber-300 dark:border-amber-700 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-amber-500/20"
                             autoFocus
                           />
                           <div className="flex items-center gap-3 justify-between">
@@ -343,7 +335,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                               <input
                                 checked={task.completed}
                                 onChange={() => handleToggleComplete(task)}
-                                className="h-5 w-5 rounded border-slate-300 dark:border-[#324867] border-2 bg-transparent text-indigo-600 checked:bg-indigo-600 checked:border-indigo-600 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer transition-colors"
+                                className="h-5 w-5 rounded border-slate-300 dark:border-[#324867] border-2 bg-transparent text-amber-600 checked:bg-amber-600 checked:border-amber-600 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer transition-colors"
                                 type="checkbox"
                               />
                             </div>
@@ -361,7 +353,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                             <div className="flex items-center gap-3">
                               <div className="w-24 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-[#324867]">
                                 <motion.div
-                                  className={`h-full rounded-full ${task.completed ? 'bg-emerald-500' : 'bg-indigo-600'}`}
+                                  className={`h-full rounded-full ${task.completed ? 'bg-emerald-500' : 'bg-amber-600'}`}
                                   initial={{ width: 0 }}
                                   animate={{ width: `${progress}%` }}
                                   transition={{ duration: 1 }}
@@ -376,11 +368,11 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
                                   onClick={() => handleTaskSelect(task.id)}
-                                  className="text-slate-400 hover:text-indigo-600 transition-colors p-1"
+                                  className="text-slate-400 hover:text-amber-600 transition-colors p-1"
                                   title="Focus on this task"
                                 >
                                   {selectedTaskId === task.id ? (
-                                    <PlayCircleIcon className="h-4 w-4 text-indigo-600" />
+                                    <PlayCircleIcon className="h-4 w-4 text-amber-600" />
                                   ) : (
                                     <PlayIcon className="h-4 w-4" />
                                   )}
@@ -393,7 +385,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => startEditing(task)}
-                                    className="p-1.5 text-slate-400 hover:text-indigo-500 transition-colors"
+                                    className="p-1.5 text-slate-400 hover:text-amber-500 transition-colors"
                                   >
                                     <PencilIcon className="h-4 w-4" />
                                   </motion.button>
@@ -439,7 +431,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                       value={newTaskTitle}
                       onChange={(e) => setNewTaskTitle(e.target.value)}
                       placeholder="Task name..."
-                      className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-indigo-500 dark:focus:border-indigo-500 transition-colors"
+                      className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-amber-500 dark:focus:border-amber-500 transition-colors"
                       autoFocus
                     />
                     <div className="flex items-center justify-center gap-4">
@@ -470,7 +462,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                         whileTap={{ scale: 0.95 }}
                         type="submit"
                         disabled={isSubmitting || !newTaskTitle.trim()}
-                        className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:shadow-none transition-all"
+                        className="px-6 py-2.5 rounded-xl bg-amber-600 text-white font-bold hover:bg-amber-700 shadow-lg shadow-amber-500/20 disabled:opacity-50 disabled:shadow-none transition-all"
                       >
                         Save Task
                       </motion.button>
@@ -485,7 +477,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                   exit={{ opacity: 0, scale: 0.95 }}
                   className="flex flex-col items-center"
                 >
-                  <div className="size-12 bg-indigo-50 dark:bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-600 mb-4">
+                  <div className="size-12 bg-amber-50 dark:bg-amber-500/10 rounded-full flex items-center justify-center text-amber-600 mb-4">
                     <ArchiveBoxArrowDownIcon className="h-6 w-6" />
                   </div>
                   <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">Ready for a new goal?</h3>
@@ -494,7 +486,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ onSelectTask, selectedTaskId 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setShowAddForm(true)}
-                    className="flex min-w-[160px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 bg-indigo-600 text-white text-base font-bold leading-normal tracking-[0.015em] transition-all hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30"
+                    className="flex min-w-[160px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 bg-amber-600 text-white text-base font-bold leading-normal tracking-[0.015em] transition-all hover:bg-amber-700 hover:shadow-lg hover:shadow-amber-500/30"
                   >
                     <PlusIcon className="h-5 w-5 mr-2" />
                     <span>Create New Task</span>

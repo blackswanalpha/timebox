@@ -34,9 +34,9 @@ const HeatmapStats: React.FC<HeatmapStatsProps> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Peak Performance */}
-      <div className="bg-white dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50 hover:border-indigo-200 dark:hover:border-indigo-700/50 transition-all">
+      <div className="bg-white dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50 hover:border-amber-200 dark:hover:border-amber-700/50 transition-all">
         <div className="flex items-center gap-3 mb-4">
-          <div className="size-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+          <div className="size-10 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-400">
             <ClockIcon className="h-5 w-5" />
           </div>
           <h4 className="font-bold text-slate-700 dark:text-slate-200">Peak Performance</h4>

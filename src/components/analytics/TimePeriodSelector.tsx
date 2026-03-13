@@ -80,7 +80,7 @@ const TimePeriodSelector: React.FC<TimePeriodSelectorProps> = ({
             onClick={() => handlePeriodChange(period.id)}
             className={`flex h-full grow items-center justify-center overflow-hidden rounded-lg px-4 text-sm font-semibold transition-all ${
               value === period.id
-                ? 'bg-white dark:bg-slate-700 shadow-md text-indigo-600 dark:text-white'
+                ? 'bg-white dark:bg-slate-700 shadow-md text-amber-600 dark:text-white'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
             }`}
           >
@@ -94,7 +94,7 @@ const TimePeriodSelector: React.FC<TimePeriodSelectorProps> = ({
         <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
           <PopoverTrigger asChild>
             <button
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:border-amber-300 dark:hover:border-amber-700 transition-colors"
               onClick={() => setIsCalendarOpen(true)}
             >
               <CalendarDaysIcon className="h-4 w-4 text-slate-400" />

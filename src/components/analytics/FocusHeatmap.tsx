@@ -16,13 +16,13 @@ const getIntensityClass = (intensity: number, isDark: boolean): string => {
     case 0:
       return `${baseClasses} ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`;
     case 1:
-      return `${baseClasses} bg-indigo-500/20`;
+      return `${baseClasses} bg-amber-500/20`;
     case 2:
-      return `${baseClasses} bg-indigo-500/40`;
+      return `${baseClasses} bg-amber-500/40`;
     case 3:
-      return `${baseClasses} bg-indigo-500/70`;
+      return `${baseClasses} bg-amber-500/70`;
     case 4:
-      return `${baseClasses} bg-indigo-600 shadow-lg shadow-indigo-500/30`;
+      return `${baseClasses} bg-amber-600 shadow-lg shadow-amber-500/30`;
     default:
       return `${baseClasses} ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`;
   }
@@ -94,10 +94,10 @@ const FocusHeatmap: React.FC<FocusHeatmapProps> = ({ gridData, sessionsByCell })
               <span>Less Focus</span>
               <div className="flex gap-1">
                 <div className="w-4 h-4 rounded-sm bg-slate-200 dark:bg-slate-800" />
-                <div className="w-4 h-4 rounded-sm bg-indigo-500/20" />
-                <div className="w-4 h-4 rounded-sm bg-indigo-500/40" />
-                <div className="w-4 h-4 rounded-sm bg-indigo-500/70" />
-                <div className="w-4 h-4 rounded-sm bg-indigo-600" />
+                <div className="w-4 h-4 rounded-sm bg-amber-500/20" />
+                <div className="w-4 h-4 rounded-sm bg-amber-500/40" />
+                <div className="w-4 h-4 rounded-sm bg-amber-500/70" />
+                <div className="w-4 h-4 rounded-sm bg-amber-600" />
               </div>
               <span>More Focus</span>
             </div>

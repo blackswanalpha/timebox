@@ -87,7 +87,7 @@ const CreateGoal: React.FC = () => {
     };
 
     const categories = [
-        { id: 'Work', icon: <BriefcaseIcon className="h-5 w-5" />, color: 'bg-indigo-600' },
+        { id: 'Work', icon: <BriefcaseIcon className="h-5 w-5" />, color: 'bg-amber-600' },
         { id: 'Personal', icon: <UserIcon className="h-5 w-5" />, color: 'bg-emerald-600' },
         { id: 'Study', icon: <AcademicCapIcon className="h-5 w-5" />, color: 'bg-amber-600' }
     ];
@@ -116,7 +116,7 @@ const CreateGoal: React.FC = () => {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="e.g., Master Rust Programming"
-                            className="w-full text-3xl font-bold bg-transparent border-b-2 border-slate-200 dark:border-slate-700 focus:border-indigo-500 py-2 outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 transition-all text-slate-800 dark:text-white"
+                            className="w-full text-3xl font-bold bg-transparent border-b-2 border-slate-200 dark:border-slate-700 focus:border-amber-500 py-2 outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 transition-all text-slate-800 dark:text-white"
                             required
                             autoFocus
                         />
@@ -132,10 +132,10 @@ const CreateGoal: React.FC = () => {
                                     key={cat.id}
                                     type="button"
                                     onClick={() => setCategory(cat.id)}
-                                    className={`flex items - center gap - 2 px - 5 py - 2.5 rounded - xl border transition - all ${category === cat.id
-                                            ? `${cat.color} text-white border-transparent shadow-lg shadow-indigo-500/20 scale-105`
+                                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl border transition-all ${category === cat.id
+                                            ? `${cat.color} text-white border-transparent shadow-lg shadow-amber-500/20 scale-105`
                                             : 'bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                                        } `}
+                                        }`}
                                 >
                                     {cat.icon}
                                     <span className="font-medium">{cat.id}</span>
@@ -158,7 +158,7 @@ const CreateGoal: React.FC = () => {
                                     min="1"
                                     value={target}
                                     onChange={(e) => setTarget(parseInt(e.target.value) || 1)}
-                                    className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all font-medium text-lg"
+                                    className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all font-medium text-lg"
                                 />
                             </div>
                             <p className="text-xs text-slate-500 ml-1">
@@ -186,7 +186,7 @@ const CreateGoal: React.FC = () => {
                             value={motivation}
                             onChange={(e) => setMotivation(e.target.value)}
                             placeholder="Why does this goal matter to you?"
-                            className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-4 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all min-h-[120px] resize-none"
+                            className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-4 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all min-h-[120px] resize-none"
                         />
                     </div>
 
@@ -194,7 +194,7 @@ const CreateGoal: React.FC = () => {
                         <button
                             type="submit"
                             disabled={isSubmitting || !title.trim()}
-                            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/30 transition-all active:scale-95 disabled:opacity-70 disabled:active:scale-100 flex justify-center items-center gap-2"
+                            className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-amber-500/30 transition-all active:scale-95 disabled:opacity-70 disabled:active:scale-100 flex justify-center items-center gap-2"
                         >
                             {isSubmitting ? 'Creating...' : 'Create Goal'}
                         </button>

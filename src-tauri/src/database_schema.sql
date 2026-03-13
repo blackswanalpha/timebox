@@ -68,6 +68,23 @@ CREATE TABLE IF NOT EXISTS goals (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Daily Reflections table
+CREATE TABLE IF NOT EXISTS daily_reflections (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    reflection_date DATE NOT NULL,
+    title TEXT,
+    duration_reflection TEXT,
+    purpose_reflection TEXT,
+    general_notes TEXT,
+    mood_rating INTEGER,
+    productivity_rating INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(user_id, reflection_date)
+);
+
 -- Insert default user if none exists
 INSERT OR IGNORE INTO users (id, name) VALUES ('default_user', 'Default User');
 

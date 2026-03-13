@@ -61,7 +61,7 @@ const HeatmapTooltip: React.FC<HeatmapTooltipProps> = ({
               {formatTime(hour)}
             </span>
           </div>
-          <span className="text-xs font-bold px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-md">
+          <span className="text-xs font-bold px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-md">
             {sessions.length} session{sessions.length !== 1 ? 's' : ''}
           </span>
         </div>

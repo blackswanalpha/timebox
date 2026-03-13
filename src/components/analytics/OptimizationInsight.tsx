@@ -12,7 +12,7 @@ const OptimizationInsight: React.FC<OptimizationInsightProps> = ({
 }) => {
   if (!hasEnoughData) {
     return (
-      <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-8 rounded-2xl flex items-center gap-6 text-white overflow-hidden relative">
+      <div className="bg-gradient-to-r from-amber-600 to-amber-700 p-8 rounded-2xl flex items-center gap-6 text-white overflow-hidden relative">
         <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32" />
         <div className="relative z-10 flex items-center gap-4">
           <div className="size-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -20,7 +20,7 @@ const OptimizationInsight: React.FC<OptimizationInsightProps> = ({
           </div>
           <div>
             <h4 className="text-xl font-bold">Getting Started</h4>
-            <p className="text-indigo-100 max-w-xl mt-1">
+            <p className="text-amber-100 max-w-xl mt-1">
               Complete a few focus sessions to unlock personalized insights and see your productivity patterns.
             </p>
           </div>
@@ -36,14 +36,14 @@ const OptimizationInsight: React.FC<OptimizationInsightProps> = ({
   };
 
   return (
-    <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 text-white overflow-hidden relative">
+    <div className="bg-gradient-to-r from-amber-600 to-amber-700 p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 text-white overflow-hidden relative">
       <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32" />
       <div className="relative z-10 space-y-2">
         <div className="flex items-center gap-3">
           <LightBulbIcon className="h-6 w-6 text-white" />
           <h4 className="text-2xl font-bold">Optimization Insight</h4>
         </div>
-        <p className="text-indigo-100 max-w-xl">
+        <p className="text-amber-100 max-w-xl">
           {lowProductivityHour !== null ? (
             <>
               Based on your heatmap, your focus drops significantly after {formatHour(lowProductivityHour)}. 
@@ -57,7 +57,7 @@ const OptimizationInsight: React.FC<OptimizationInsightProps> = ({
           )}
         </p>
       </div>
-      <button className="relative z-10 bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-slate-100 transition-colors whitespace-nowrap shadow-xl">
+      <button className="relative z-10 bg-white text-amber-600 px-6 py-3 rounded-xl font-bold hover:bg-slate-100 transition-colors whitespace-nowrap shadow-xl">
         Adjust Schedule
       </button>
     </div>

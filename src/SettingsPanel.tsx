@@ -116,7 +116,7 @@ const SettingsPanel: React.FC = () => {
       {/* Header */}
       <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2.5 rounded-xl text-indigo-600 dark:text-indigo-400">
+          <div className="bg-amber-100 dark:bg-amber-900/30 p-2.5 rounded-xl text-amber-600 dark:text-amber-400">
             <Cog6ToothIcon className="h-6 w-6" />
           </div>
           <h2 className="text-xl font-bold">Settings</h2>
@@ -127,7 +127,7 @@ const SettingsPanel: React.FC = () => {
         {/* Timer Durations Section */}
         <section>
           <div className="flex items-center gap-2 mb-6">
-            <ClockIcon className="h-4.5 w-4.5 text-indigo-500" />
+            <ClockIcon className="h-4.5 w-4.5 text-amber-500" />
             <h3 className="text-sm font-black uppercase tracking-widest text-slate-500">Timer Durations</h3>
           </div>
 
@@ -142,7 +142,7 @@ const SettingsPanel: React.FC = () => {
                   max="60"
                   value={focusMinutes}
                   onChange={(e) => setFocusMinutes(parseInt(e.target.value) || 25)}
-                  className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-lg font-black text-indigo-600 dark:text-indigo-400 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
+                  className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-lg font-black text-amber-600 dark:text-amber-400 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-widest text-slate-400 pointer-events-none">Min</span>
               </div>
@@ -201,7 +201,7 @@ const SettingsPanel: React.FC = () => {
         {/* Behavior Section */}
         <section>
           <div className="flex items-center gap-2 mb-6">
-            <ShieldCheckIcon className="h-4.5 w-4.5 text-indigo-500" />
+            <ShieldCheckIcon className="h-4.5 w-4.5 text-amber-500" />
             <h3 className="text-sm font-black uppercase tracking-widest text-slate-500">App Behavior</h3>
           </div>
 
@@ -214,7 +214,7 @@ const SettingsPanel: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStrictMode(!strictMode)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${strictMode ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'}`}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${strictMode ? 'bg-amber-600' : 'bg-slate-200 dark:bg-slate-700'}`}
               >
                 <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${strictMode ? 'translate-x-5' : 'translate-x-0'}`} />
               </button>
@@ -228,7 +228,7 @@ const SettingsPanel: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setAutoStartBreaks(!autoStartBreaks)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${autoStartBreaks ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'}`}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${autoStartBreaks ? 'bg-amber-600' : 'bg-slate-200 dark:bg-slate-700'}`}
               >
                 <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${autoStartBreaks ? 'translate-x-5' : 'translate-x-0'}`} />
               </button>
@@ -239,7 +239,7 @@ const SettingsPanel: React.FC = () => {
         {/* Sound & Notifications Section */}
         <section>
           <div className="flex items-center gap-2 mb-6">
-            <SpeakerWaveIcon className="h-4.5 w-4.5 text-indigo-500" />
+            <SpeakerWaveIcon className="h-4.5 w-4.5 text-amber-500" />
             <h3 className="text-sm font-black uppercase tracking-widest text-slate-500">Sound & Notifications</h3>
           </div>
 
@@ -252,7 +252,7 @@ const SettingsPanel: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSoundEnabled(!soundEnabled)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${soundEnabled ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'}`}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${soundEnabled ? 'bg-amber-600' : 'bg-slate-200 dark:bg-slate-700'}`}
               >
                 <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${soundEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
               </button>
@@ -262,7 +262,7 @@ const SettingsPanel: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <p className="font-bold text-slate-800 dark:text-slate-200">Volume</p>
-                  <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{soundVolume}%</span>
+                  <span className="text-sm font-black text-amber-600 dark:text-amber-400">{soundVolume}%</span>
                 </div>
                 <div className="relative">
                   <input
@@ -272,7 +272,7 @@ const SettingsPanel: React.FC = () => {
                     value={soundVolume}
                     onChange={(e) => setSoundVolume(parseInt(e.target.value))}
                     disabled={!soundEnabled}
-                    className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-600 disabled:cursor-not-allowed"
+                    className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-600 disabled:cursor-not-allowed"
                   />
                   <div className="flex justify-between text-xs text-slate-400 mt-1">
                     <span>0%</span>
@@ -285,7 +285,7 @@ const SettingsPanel: React.FC = () => {
                   <button
                     onClick={handleTestSound}
                     disabled={isTestPlaying}
-                    className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-sm font-bold w-full hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-all disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-sm font-bold w-full hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all disabled:opacity-50"
                   >
                     <SpeakerWaveIcon className={`h-5 w-5 ${isTestPlaying ? 'animate-pulse' : ''}`} />
                     <span>{isTestPlaying ? 'Playing...' : 'Test Sound'}</span>
@@ -300,7 +300,7 @@ const SettingsPanel: React.FC = () => {
         <div className="pt-6 flex flex-col sm:flex-row items-center gap-4 border-t border-slate-100 dark:border-slate-800">
           <button
             type="submit"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95 disabled:opacity-50"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-amber-500/20 transition-all active:scale-95 disabled:opacity-50"
             disabled={isSaving}
           >
             {isSaving ? <ArrowPathIcon className="h-5 w-5 animate-spin" /> : <ArrowDownOnSquareIcon className="h-5 w-5" />}

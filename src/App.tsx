@@ -130,7 +130,7 @@ function App() {
             <motion.div
               whileHover={{ rotate: 10, scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-500/20 flex-shrink-0"
+              className="bg-amber-600 p-2 rounded-xl shadow-lg shadow-amber-500/20 flex-shrink-0"
             >
               <CubeIcon className="h-6 w-6 text-white" />
             </motion.div>
@@ -142,7 +142,7 @@ function App() {
               <button
                 key={item.id}
                 className={`group relative w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${activeTab === item.id
-                  ? 'text-indigo-600 dark:text-indigo-400'
+                  ? 'text-amber-600 dark:text-amber-400'
                   : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
                   }`}
                 onClick={() => setActiveTab(item.id)}
@@ -151,7 +151,7 @@ function App() {
                 {activeTab === item.id && (
                   <motion.div
                     layoutId="activeTabBg"
-                    className="absolute inset-0 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl"
+                    className="absolute inset-0 bg-amber-50 dark:bg-amber-900/30 rounded-xl"
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}
@@ -162,7 +162,7 @@ function App() {
                 {activeTab === item.id && (
                   <motion.div
                     layoutId="activeTabDot"
-                    className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 hidden md:block relative z-10"
+                    className="ml-auto w-1.5 h-1.5 rounded-full bg-amber-600 dark:bg-amber-400 hidden md:block relative z-10"
                   />
                 )}
               </button>

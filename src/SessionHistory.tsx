@@ -8,7 +8,6 @@ import {
   ArrowPathIcon,
   MagnifyingGlassIcon,
   ArrowDownTrayIcon,
-  ChevronDownIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline';
 import { apiService } from './apiService';
@@ -17,11 +16,14 @@ import { format, isToday, isYesterday } from 'date-fns';
 import { useAtom } from 'jotai';
 import { activeTabAtom } from './atoms';
 
+type SessionFilter = 'all' | 'focus' | 'breaks';
+
 const SessionHistory: React.FC = () => {
   const [, setActiveTab] = useAtom(activeTabAtom);
   const [sessions, setSessions] = useState<PomodoroSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sessionFilter, setSessionFilter] = useState<SessionFilter>('all');
 
   // Load sessions on component mount
   useEffect(() => {
@@ -86,7 +88,7 @@ const SessionHistory: React.FC = () => {
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
         >
-          <LoaderIcon className="h-10 w-10 text-indigo-500 mb-4" />
+          <LoaderIcon className="h-10 w-10 text-amber-500 mb-4" />
         </motion.div>
         <p className="text-slate-500 font-medium">Loading your productivity history...</p>
       </div>
@@ -94,6 +96,11 @@ const SessionHistory: React.FC = () => {
   }
 
   const filteredSessions = sessions.filter(session => {
+    // Apply type filter
+    if (sessionFilter === 'focus' && session.session_type !== 'FOCUS') return false;
+    if (sessionFilter === 'breaks' && session.session_type === 'FOCUS') return false;
+
+    // Apply search filter
     if (!searchQuery) return true;
     const taskTitle = session.task_title?.toLowerCase() || '';
     const sessionType = session.session_type.toLowerCase();
@@ -115,7 +122,7 @@ const SessionHistory: React.FC = () => {
               placeholder="Search sessions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-100 dark:bg-[#1a2533] border-none rounded-xl py-2 pl-9 pr-4 text-sm focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all"
+              className="w-full bg-slate-100 dark:bg-[#1a2533] border-none rounded-xl py-2 pl-9 pr-4 text-sm focus:ring-2 focus:ring-amber-500/20 dark:text-white transition-all"
             />
           </div>
         </div>
@@ -123,7 +130,7 @@ const SessionHistory: React.FC = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setActiveTab('manual-entry')}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-500/20"
+          className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-amber-500/20"
         >
           <ArrowDownTrayIcon className="h-4 w-4" />
           Log Session
@@ -157,19 +164,27 @@ const SessionHistory: React.FC = () => {
             transition={{ delay: 0.1 }}
             className="flex gap-3 mb-10 pb-6 border-b border-slate-100 dark:border-[#233348]"
           >
-            <button className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium">
-              All Sessions <ChevronDownIcon className="h-4 w-4" />
-            </button>
-            <button className="flex items-center gap-2 bg-slate-100 dark:bg-[#233348] text-slate-700 dark:text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-[#2d415d] transition-colors">
-              Work <ChevronDownIcon className="h-4 w-4" />
-            </button>
-            <button className="flex items-center gap-2 bg-slate-100 dark:bg-[#233348] text-slate-700 dark:text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-[#2d415d] transition-colors">
-              Study <ChevronDownIcon className="h-4 w-4" />
-            </button>
+            {([
+              { id: 'all' as SessionFilter, label: 'All Sessions' },
+              { id: 'focus' as SessionFilter, label: 'Focus' },
+              { id: 'breaks' as SessionFilter, label: 'Breaks' },
+            ]).map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => setSessionFilter(filter.id)}
+                className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  sessionFilter === filter.id
+                    ? 'bg-amber-600 text-white'
+                    : 'bg-slate-100 dark:bg-[#233348] text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-[#2d415d]'
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
           </motion.div>
 
           <AnimatePresence mode="popLayout">
-            {sessions.length === 0 ? (
+            {filteredSessions.length === 0 ? (
               <motion.div
                 key="empty"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -217,7 +232,7 @@ const SessionHistory: React.FC = () => {
                                 <motion.div
                                   whileHover={{ scale: 1.2 }}
                                   className={`mt-2 flex items-center justify-center h-9 w-9 rounded-full shrink-0 z-10 transition-colors ${isFocus
-                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                    ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-sm'
                                     : 'bg-slate-100 dark:bg-[#233348] text-slate-400 dark:text-[#92a9c9]'
                                     }`}>
                                   {getSessionIcon(session.session_type)}
@@ -235,7 +250,7 @@ const SessionHistory: React.FC = () => {
                               <motion.div
                                 whileHover={{ x: 5 }}
                                 className={`flex flex-col py-4 px-5 rounded-2xl mb-6 transition-all border ${isFocus
-                                  ? 'bg-slate-50 dark:bg-[#1a2533] border-slate-200 dark:border-[#233348] hover:border-indigo-300 dark:hover:border-indigo-500/30 shadow-sm'
+                                  ? 'bg-slate-50 dark:bg-[#1a2533] border-slate-200 dark:border-[#233348] hover:border-amber-300 dark:hover:border-amber-500/30 shadow-sm'
                                   : 'border-transparent'
                                   }`}>
                                 <div className="flex justify-between items-start mb-1">
@@ -249,7 +264,7 @@ const SessionHistory: React.FC = () => {
                                     <motion.span
                                       initial={{ opacity: 0, scale: 0.8 }}
                                       animate={{ opacity: 1, scale: 1 }}
-                                      className="bg-indigo-500/10 text-indigo-500 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider"
+                                      className="bg-amber-500/10 text-amber-500 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider"
                                     >
                                       Productivity
                                     </motion.span>

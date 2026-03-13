@@ -22,7 +22,7 @@ export function DatePicker({ date, setDate, placeholder = "Pick a date", classNa
             <PopoverTrigger asChild>
                 <button
                     className={cn(
-                        "w-full flex items-center gap-3 px-4 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all font-medium text-lg text-left",
+                        "w-full flex items-center gap-3 px-4 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all font-medium text-lg text-left",
                         !date && "text-slate-500",
                         className
                     )}

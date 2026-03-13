@@ -3,6 +3,8 @@ import { MinusIcon, XMarkIcon, ExclamationCircleIcon } from '@heroicons/react/24
 import { useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { motion, AnimatePresence } from 'framer-motion';
+import ClockoutButton from './components/ClockoutButton';
+import ClockoutModal from './components/ClockoutModal';
 
 export default function TitleBar() {
     const [showDialog, setShowDialog] = useState(false);
@@ -55,7 +57,8 @@ export default function TitleBar() {
                 <div className="pl-3 text-xs font-semibold text-slate-500 dark:text-slate-400 pointer-events-none">
                     TimeBox
                 </div>
-                <div className="no-drag-region flex h-full">
+                <div className="no-drag-region flex items-center gap-2 h-full pr-2">
+                    <ClockoutButton />
                     <button
                         className="flex justify-center items-center w-10 h-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         onClick={() => getCurrentWindow().minimize()}
@@ -74,6 +77,8 @@ export default function TitleBar() {
                     </button>
                 </div>
             </div>
+
+            <ClockoutModal />
 
             <AnimatePresence>
                 {showDialog && (
@@ -124,7 +129,7 @@ export default function TitleBar() {
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    className="px-4 py-2 rounded-xl text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-colors"
+                                    className="px-4 py-2 rounded-xl text-sm font-medium bg-amber-600 text-white hover:bg-amber-700 shadow-lg shadow-amber-500/20 transition-colors"
                                     onClick={handleSaveAndClose}
                                     disabled={isProcessing}
                                     type="button"

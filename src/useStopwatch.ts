@@ -102,7 +102,7 @@ export const useStopwatch = () => {
         created_at: new Date().toISOString()
       };
 
-      setHistory([newSession, ...history]);
+      setHistory(prev => [newSession, ...prev]);
     }
 
     // Reset after saving
@@ -111,11 +111,11 @@ export const useStopwatch = () => {
     setElapsedSeconds(0);
     setLabel('');
     setLastTick(Date.now());
-  }, [label, history, setHistory, setIsRunning, setElapsedSeconds, setLabel, setLastTick]);
+  }, [label, setHistory, setIsRunning, setElapsedSeconds, setLabel, setLastTick]);
 
   const deleteHistoryEntry = useCallback((sessionId: string) => {
-    setHistory(history.filter(session => session.id !== sessionId));
-  }, [history, setHistory]);
+    setHistory(prev => prev.filter(session => session.id !== sessionId));
+  }, [setHistory]);
 
   const clearAllHistory = useCallback(() => {
     setHistory([]);

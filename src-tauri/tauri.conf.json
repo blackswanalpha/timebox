@@ -23,15 +23,15 @@
         "minimizable": false,
         "closable": false,
         "decorations": false,
-        "transparent": true,
+        "transparent": false,
         "visible": true,
         "alwaysOnTop": true
       },
       {
         "label": "main",
         "title": "TimeBox",
-        "width": 600,
-        "height": 800,
+        "width": 690,
+        "height": 944,
         "center": true,
         "resizable": false,
         "visible": false,

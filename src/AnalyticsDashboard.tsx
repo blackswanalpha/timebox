@@ -1,6 +1,6 @@
 // AnalyticsDashboard.tsx
 import React, { useState, useEffect, useMemo } from 'react';
-import { ChartBarIcon, ArrowPathIcon, ArrowDownTrayIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { ChartBarIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { apiService } from './apiService';
 import { PomodoroSession } from './types';
 import FocusHeatmap from './components/analytics/FocusHeatmap';
@@ -204,7 +204,7 @@ const AnalyticsDashboard: React.FC = () => {
       <div className="flex flex-col h-full bg-white dark:bg-slate-800/50 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2.5 rounded-xl text-indigo-600 dark:text-indigo-400">
+            <div className="bg-amber-100 dark:bg-amber-900/30 p-2.5 rounded-xl text-amber-600 dark:text-amber-400">
               <ChartBarIcon className="h-6 w-6" />
             </div>
             <div>
@@ -228,7 +228,7 @@ const AnalyticsDashboard: React.FC = () => {
       {/* Header */}
       <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-wrap justify-between items-start gap-4">
         <div className="flex items-center gap-3">
-          <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2.5 rounded-xl text-indigo-600 dark:text-indigo-400">
+          <div className="bg-amber-100 dark:bg-amber-900/30 p-2.5 rounded-xl text-amber-600 dark:text-amber-400">
             <ChartBarIcon className="h-6 w-6" />
           </div>
           <div>
@@ -239,11 +239,11 @@ const AnalyticsDashboard: React.FC = () => {
           </div>
         </div>
         <div className="flex gap-2">
-          <button className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors text-slate-700 dark:text-slate-300">
-            <ArrowDownTrayIcon className="h-4 w-4" /> Export PDF
-          </button>
-          <button className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20 flex items-center gap-2 hover:bg-indigo-700 transition-colors">
-            <ShareIcon className="h-4 w-4" /> Share Report
+          <button
+            onClick={loadSessions}
+            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 hover:border-amber-300 dark:hover:border-amber-700 transition-colors text-slate-700 dark:text-slate-300"
+          >
+            <ArrowPathIcon className="h-4 w-4" /> Refresh
           </button>
         </div>
       </div>
