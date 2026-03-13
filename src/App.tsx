@@ -29,6 +29,7 @@ import StopwatchTimer from "./StopwatchTimer";
 import { useTimer, useTimerPolling } from "./useTimer";
 import { soundEnabledAtom, soundVolumeAtom, fetchSettingsAtom } from "./atoms";
 import { cashierSoundBase64 } from "./audioAssets";
+import UpdateNotification from "./components/UpdateNotification";
 
 interface NavItem {
   id: TabType;
@@ -122,6 +123,7 @@ function App() {
     <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300">
       <TitleBar />
       <Toaster position="top-right" theme={theme === 'dark' ? 'dark' : 'light'} />
+      <UpdateNotification />
 
       <div className="flex h-screen pt-8"> {/* pt-8 for titlebar */}
         {/* Sidebar Navigation */}

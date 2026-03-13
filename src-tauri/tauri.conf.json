@@ -42,12 +42,13 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self' tauri: 'unsafe-inline'; img-src 'self' tauri: asset: data:; media-src 'self' tauri: asset: data:;"
+      "csp": "default-src 'self' tauri: 'unsafe-inline'; img-src 'self' tauri: asset: data:; media-src 'self' tauri: asset: data:; connect-src 'self' https://github.com https://objects.githubusercontent.com"
     }
   },
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": "v1Compatible",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -55,5 +56,13 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "RWRMdH9255i37yc8jP2YRxs8MrfOzxXsnWVH6sfJ11JzZpZe+uvw6EFU",
+      "endpoints": [
+        "https://github.com/blackswanalpha/timebox/releases/latest/download/latest.json"
+      ]
+    }
   }
 }

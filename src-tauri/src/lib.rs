@@ -14,6 +14,8 @@ use commands::{AppState, initialize_app, start_session, pause_session, resume_se
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .setup(|app| {
             // Initialize the database
             tauri::async_runtime::block_on(async {
