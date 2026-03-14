@@ -2,6 +2,7 @@ import React, { useRef, useState, useCallback } from 'react';
 import { useAtom } from 'jotai';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactPlayer from 'react-player';
+const Player = ReactPlayer as any;
 import {
   PlayIcon,
   PauseIcon,
@@ -59,7 +60,8 @@ const StreamPage: React.FC = () => {
   const [playlistIndex, setPlaylistIndex] = useAtom(streamPlaylistIndexAtom);
   const [shuffle, setShuffle] = useAtom(streamShuffleAtom);
   const [repeat, setRepeat] = useAtom(streamRepeatAtom);
-  const playerRef = useRef<HTMLVideoElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const playerRef = useRef<any>(null);
 
   const [viewTab, setViewTab] = useState<ViewTab>('videos');
   const [showNewPlaylist, setShowNewPlaylist] = useState(false);
@@ -83,21 +85,15 @@ const StreamPage: React.FC = () => {
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = parseFloat(e.target.value);
     setProgress(time);
-    if (playerRef.current) {
-      playerRef.current.currentTime = time;
-    }
+    playerRef.current?.seekTo(time, 'seconds');
   };
 
-  const handleTimeUpdate = () => {
-    if (playerRef.current) {
-      setProgress(playerRef.current.currentTime);
-    }
+  const handleProgress = (state: any) => {
+    setProgress(state.playedSeconds);
   };
 
-  const handleLoadedMetadata = () => {
-    if (playerRef.current) {
-      setDuration(playerRef.current.duration);
-    }
+  const handleDuration = (dur: number) => {
+    setDuration(dur);
   };
 
   const activePlaylist = playlists.find((p) => p.id === activePlaylistId) ?? null;
@@ -385,9 +381,9 @@ const StreamPage: React.FC = () => {
             className="w-full mb-8"
           >
             <div className="relative w-full rounded-2xl overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
-              <ReactPlayer
+              <Player
                 ref={playerRef}
-                src={currentUrl}
+                url={currentUrl}
                 playing={isPlaying}
                 volume={volume}
                 muted={muted}
@@ -398,8 +394,9 @@ const StreamPage: React.FC = () => {
                 onPause={() => setIsPlaying(false)}
                 onEnded={handleVideoEnd}
                 onError={() => toast.error('Failed to load video')}
-                onTimeUpdate={handleTimeUpdate}
-                onLoadedMetadata={handleLoadedMetadata}
+                onProgress={handleProgress}
+                onDuration={handleDuration}
+                config={{ youtube: { playerVars: { modestbranding: 1 }, embedOptions: { host: 'https://www.youtube-nocookie.com' } } } as any}
               />
             </div>
 
